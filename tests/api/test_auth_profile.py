@@ -192,3 +192,26 @@ def test_profile_isolated_between_users(client, auth):
     me = client.get("/auth/me", headers=other).json()
     assert me["display_name"] is None
     assert me["onboarded_at"] is None
+
+
+def test_therapy_experience_saved(client, auth):
+    r = client.patch(
+        "/auth/me/profile", json={"therapy_experience": "ongoing"}, headers=auth["headers"]
+    )
+    assert r.status_code == 200
+    assert r.json()["therapy_experience"] == "ongoing"
+    assert client.get("/auth/me", headers=auth["headers"]).json()["therapy_experience"] == "ongoing"
+
+
+def test_therapy_experience_unknown_value_dropped(client, auth):
+    r = client.patch(
+        "/auth/me/profile", json={"therapy_experience": "expert"}, headers=auth["headers"]
+    )
+    assert r.status_code == 200
+    assert r.json()["therapy_experience"] is None
+
+
+def test_therapy_experience_untouched_when_absent(client, auth):
+    client.patch("/auth/me/profile", json={"therapy_experience": "some"}, headers=auth["headers"])
+    r = client.patch("/auth/me/profile", json={"display_name": "Ada"}, headers=auth["headers"])
+    assert r.json()["therapy_experience"] == "some"

@@ -64,6 +64,7 @@ class UserView(BaseModel):
     focus_topics: list[str] = []
     onboarded_at: Optional[str] = None
     focus_greeted_at: Optional[str] = None
+    therapy_experience: Optional[str] = None
 
 
 class ProfileUpdate(BaseModel):
@@ -76,6 +77,7 @@ class ProfileUpdate(BaseModel):
     display_name: Optional[str] = Field(None, max_length=60)
     focus_topics: Optional[list[str]] = Field(None, max_length=10)
     focus_greeted: Optional[bool] = None
+    therapy_experience: Optional[str] = None
 class TokenResponse(BaseModel):
     access_token:str
     token_type:str = "bearer"
@@ -138,6 +140,7 @@ def _to_user_view(user: User) -> UserView:
         focus_topics=user.focus_topics or [],
         onboarded_at=_iso_utc(user.onboarded_at),
         focus_greeted_at=_iso_utc(user.focus_greeted_at),
+        therapy_experience=user.therapy_experience,
     )
 
 
@@ -272,6 +275,8 @@ _FOCUS_IDS = {
     "relationships", "loss", "change", "panic", "unsure",
 }
 
+_THERAPY_EXPERIENCE = {"none", "some", "ongoing"}
+
 # graph/migrate.py'deki TECHNIQUE_PATTERNS ile aynı id'ler. Kullanıcıya
 # "thought_record" göstermek anlamsız.
 _TECHNIQUE_LABELS = {
@@ -321,6 +326,11 @@ async def update_my_profile(
 
         if req.focus_topics is not None:
             row.focus_topics = [t for t in req.focus_topics if t in _FOCUS_IDS]
+
+        if req.therapy_experience is not None:
+            row.therapy_experience = (
+                req.therapy_experience if req.therapy_experience in _THERAPY_EXPERIENCE else None
+            )
 
         # Bir kez damgalanır; sonraki istekler tarihi ileri taşımaz.
         if req.focus_greeted and row.focus_greeted_at is None:

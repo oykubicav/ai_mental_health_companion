@@ -122,6 +122,9 @@ class User(Base):
     # Seçilen konular karşılamada yalnızca bir kez anılır. Cihazda tutulunca
     # her çıkış-giriş sıfırlanıyor ve aynı cümle tekrar tekrar kuruluyordu.
     focus_greeted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # none | some | ongoing — bir uzmanla görüşen kullanıcıya Neva'nın
+    # tamamlayıcı olduğunu hatırlatmak için.
+    therapy_experience: Mapped[str | None] = mapped_column(String(16), nullable=True)
 
     sessions: Mapped[list["ChatSession"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(

@@ -21,11 +21,15 @@ import { History } from "lucide-react";
 import HistoryPanel from "./HistoryPanel";
 import { focusLabelsFor, clearProfile } from "@/lib/profile";
 
-function buildWelcome(name: string, focusLabels: string[]): string {
+function buildWelcome(name: string, focusLabels: string[], inTherapy = false): string {
   const greeting = name ? `Merhaba ${name}.` : "Merhaba, hoş geldin.";
+  // Konular gibi yalnızca ilk sohbette söylenir (aynı damga).
+  const therapyNote = inTherapy
+    ? " Bir uzmanla görüştüğünü söylemiştin; burada fark ettiklerini oraya taşımak iyi olabilir, ben onun yerine değil yanına geliyorum."
+    : "";
 
   if (focusLabels.length === 0) {
-    return `${greeting} Bugün nasıl gidiyor? Aklından geçen neyse anlatabilirsin.`;
+    return `${greeting}${therapyNote} Bugün nasıl gidiyor? Aklından geçen neyse anlatabilirsin.`;
   }
 
   const topics =
@@ -35,7 +39,7 @@ function buildWelcome(name: string, focusLabels: string[]): string {
         " ve " +
         focusLabels[focusLabels.length - 1].toLowerCase();
 
-  return `${greeting} Başlarken ${topics} demiştin. İstersen oradan başlayalım, istersen bugün aklında ne varsa onu anlat. Acelemiz yok.`;
+  return `${greeting}${therapyNote} Başlarken ${topics} demiştin. İstersen oradan başlayalım, istersen bugün aklında ne varsa onu anlat. Acelemiz yok.`;
 }
 
 export default function ChatWindow() {
@@ -227,10 +231,12 @@ export default function ChatWindow() {
     if (!user || welcomeBuilt.current) return;
     welcomeBuilt.current = true;
 
-    const labels = user.focus_greeted_at ? [] : focusLabelsFor(user.focus_topics);
-    setWelcome(buildWelcome(user.display_name ?? "", labels));
+    const first = !user.focus_greeted_at;
+    const labels = first ? focusLabelsFor(user.focus_topics) : [];
+    const inTherapy = first && user.therapy_experience === "ongoing";
+    setWelcome(buildWelcome(user.display_name ?? "", labels, inTherapy));
 
-    if (labels.length > 0) {
+    if (labels.length > 0 || inTherapy) {
       void updateProfile({ focus_greeted: true }).catch(() => {});
     }
   }, [user, updateProfile]);

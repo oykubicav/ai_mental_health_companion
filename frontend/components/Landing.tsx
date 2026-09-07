@@ -144,16 +144,10 @@ export default function Landing({ onStart }: { onStart: () => void }) {
                 <h2 className="display text-[36px] sm:text-[46px] leading-[1.08] text-cbt-text dark:text-cbt-dark-text mb-4">
                   Ne konuşabilirsin
                 </h2>
-                <p className="text-[16px] text-cbt-textSecondary dark:text-cbt-dark-textSecondary leading-relaxed mb-8">
+                <p className="text-[16px] text-cbt-textSecondary dark:text-cbt-dark-textSecondary leading-relaxed">
                   Neva her şeyi bilmez; on sekiz konuyu iyi bilir. Konuşman
                   bunların dışına çıkarsa bunu açıkça söyler, uydurmaz.
                 </p>
-                <dl className="grid grid-cols-2 gap-x-6 gap-y-5">
-                  <Stat n="18" label="konu modülü" />
-                  <Stat n="180" label="bilgi kartı" />
-                  <Stat n="19" label="güvenlik kartı" />
-                  <Stat n="171" label="kaynak" />
-                </dl>
               </Reveal>
               <div className="lg:col-span-8">
                 <TopicMosaic />
@@ -278,17 +272,6 @@ function StepItem({
         {body}
       </p>
     </Reveal>
-  );
-}
-
-function Stat({ n, label }: { n: string; label: string }) {
-  return (
-    <div>
-      <dt className="display text-[36px] leading-none text-cbt-text dark:text-cbt-dark-text tabular-nums">
-        {n}
-      </dt>
-      <dd className="mt-1.5 text-[13px] text-cbt-textMuted dark:text-cbt-dark-textMuted">{label}</dd>
-    </div>
   );
 }
 
