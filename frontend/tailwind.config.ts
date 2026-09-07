@@ -68,11 +68,10 @@ const config: Config = {
           "sans-serif",
         ],
         display: [
-          "var(--font-inter)",
-          "-apple-system",
-          "SF Pro Display",
-          "system-ui",
-          "sans-serif",
+          "var(--font-display)",
+          "Georgia",
+          "Times New Roman",
+          "serif",
         ],
       },
       fontSize: {
@@ -122,6 +121,22 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateX(-12px)" },
           "100%": { opacity: "1", transform: "translateX(0)" },
         },
+        stepIn: {
+          "0%": { opacity: "0", transform: "translateY(6px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        drift: {
+          "0%, 100%": { transform: "translate3d(0, 0, 0) scale(1)" },
+          "50%": { transform: "translate3d(4%, -6%, 0) scale(1.08)" },
+        },
+        driftAlt: {
+          "0%, 100%": { transform: "translate3d(0, 0, 0) scale(1)" },
+          "50%": { transform: "translate3d(-5%, 5%, 0) scale(0.94)" },
+        },
+        caret: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0" },
+        },
       },
       animation: {
         "fade-in": "fadeIn 200ms ease-out",
@@ -129,6 +144,10 @@ const config: Config = {
         "modal-in": "modalIn 300ms cubic-bezier(0.16, 1, 0.3, 1)",
         "hero-in": "heroIn 600ms cubic-bezier(0.16, 1, 0.3, 1)",
         "slide-in-left": "slideInLeft 220ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "step-in": "stepIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both",
+        drift: "drift 18s ease-in-out infinite",
+        "drift-alt": "driftAlt 22s ease-in-out infinite",
+        caret: "caret 1s steps(1) infinite",
       },
       backdropBlur: {
         xs: "6px",

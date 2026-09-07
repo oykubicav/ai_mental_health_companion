@@ -96,12 +96,44 @@ export default function GizlilikPage() {
         </p>
       </Block>
 
-      <Block heading="Nerede tutuluyor">
+      <Block heading="Verilerin nereye gidiyor">
         <p>
-          Veriler Avrupa Birliği sınırları içindeki sunucularda (Frankfurt)
-          barındırılıyor. Yapay zekâ cevaplarının üretimi için Anthropic
-          altyapısı kullanılıyor; bu sağlayıcıya gönderilen içerik model
-          eğitiminde kullanılmıyor.
+          Bunu açıkça söylemek istiyoruz, çünkü çoğu uygulama söylemiyor:
+          <strong> verilerin Türkiye dışında işleniyor.</strong>
+        </p>
+        <p>
+          Veritabanı ve sunucu Avrupa Birliği sınırları içinde, Frankfurt&apos;ta.
+          Yazdığın her mesaj, cevap üretilebilmesi için ABD merkezli
+          Anthropic&apos;in altyapısına gönderiliyor. Gönderilmeden önce telefon
+          numarası, e-posta, kimlik numarası gibi tanımlayıcılar metinden
+          çıkarılıyor — ama mesajın içeriği olduğu gibi gidiyor. Neva
+          mesajını okumadan cevap veremez; bu, ürünün doğası.
+        </p>
+        <p>
+          Anthropic&apos;e API üzerinden gönderilen içerik model eğitiminde
+          kullanılmıyor ve kalıcı olarak saklanmıyor. Hesap oluşturma ve şifre
+          sıfırlama e-postaları da ABD merkezli bir servis (Resend) üzerinden
+          gidiyor; orada yalnızca e-posta adresin işleniyor.
+        </p>
+        <p>
+          Türkiye&apos;nin henüz hiçbir ülke için veri aktarımı yeterlilik kararı
+          bulunmuyor. Bu yüzden Neva&apos;yı kullanmak, mesajlarının yurt dışında
+          işlenmesini kabul etmek anlamına geliyor. Bu seni rahatsız ediyorsa
+          en doğru karar Neva&apos;yı kullanmamak — bunu saklamak istemiyoruz.
+        </p>
+      </Block>
+
+      <Block heading="İçerik kim tarafından incelendi">
+        <p>
+          Neva&apos;nın kullandığı bütün içerik — 18 konu başlığındaki 180 bilgi
+          kartı ve 19 güvenlik yönlendirme kartı — 4 Eylül 2026&apos;da bir klinik
+          psikolog tarafından tek tek okundu ve onaylandı. İçerik değiştiğinde
+          onay düşüyor ve yeniden inceleme gerekiyor.
+        </p>
+        <p>
+          Bu, Neva&apos;nın bir uzman olduğu anlamına gelmiyor. Anlamı şu: sana
+          anlattığı şeyler bir uzmanın &quot;bu doğru ve zararsız&quot; dediği
+          şeyler. Sana ne yapman gerektiğini söylemek yine bir uzmanın işi.
         </p>
       </Block>
 

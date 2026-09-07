@@ -61,6 +61,12 @@ export default function CardList() {
   const [openCard, setOpenCard] = useState<CBTCardOut | null>(null);
   const [openLoading, setOpenLoading] = useState(false);
 
+  // /cards?topic=insomnia gibi bağlantılar modülü doğrudan açar.
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("topic");
+    if (fromUrl) setSelectedTopic(fromUrl);
+  }, []);
+
   useEffect(() => {
     getTopics()
       .then((r) => setTopics(r.topics))
