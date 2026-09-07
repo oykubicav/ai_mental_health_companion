@@ -35,8 +35,14 @@ export default function Page() {
   }, [loading, user, updateProfile]);
 
   useEffect(() => {
-    if (!loading && isAuthenticated) {
+    if (loading) return;
+    if (isAuthenticated) {
       setState(nextStage());
+    } else {
+      // Çıkış yapıldı ya da oturum düştü. ChatWindow'u ekrandan kaldırıyoruz:
+      // bileşen ekranda kalırsa karşılama metni, mesajlar ve oturum kimliği
+      // gibi yerel state'ler önceki kullanıcıdan devralınıyor.
+      setState("landing");
     }
   }, [loading, isAuthenticated, user?.onboarded_at]);
 
