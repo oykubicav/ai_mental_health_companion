@@ -19,6 +19,7 @@ const MILESTONE_TEXT: Record<Milestone["kind"], (detail: string | null) => strin
   first_technique: (d) => `İlk denediğin teknik${d ? `: ${d.toLowerCase()}` : ""}.`,
   first_helped: (d) => `İlk işe yaradı dediğin teknik${d ? `: ${d.toLowerCase()}` : ""}.`,
   first_exercise: (d) => `İlk egzersiz${d ? `: ${EXERCISE_NAMES[d] ?? d}` : ""}.`,
+  first_journal: () => "İlk günlük kaydı.",
   first_referral: () => "Neva seni bir uzmana yönlendirdi. Bunu saklamıyoruz.",
 };
 

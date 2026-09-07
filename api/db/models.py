@@ -22,11 +22,13 @@ from datetime import datetime, timezone
 
 from sqlalchemy import (
     Boolean,
+    Date,
     DateTime,
     ForeignKey,
     Index,
     String,
     Text,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.dialects.postgresql import JSONB
@@ -358,6 +360,45 @@ class ExerciseEntry(Base):
 
     __table_args__ = (
         Index("idx_exercise_entries_user_created", "user_id", "created_at"),
+    )
+
+
+class JournalEntry(Base):
+    """Günlük — kullanıcının kendi tuttuğu gün kaydı.
+
+    Gün başına tek kayıt (user_id + entry_date benzersiz); aynı güne
+    tekrar yazmak üstüne yazar, yeni satır açmaz. Tarihi istemci
+    gönderiyor çünkü "bugün" kullanıcının saat diliminde belirleniyor;
+    sunucu UTC'ye göre karar verirse gece yazanlar bir sonraki güne düşer.
+
+    Sohbetten bağımsız: LLM'e gitmez, profil çıkarımına girmez.
+    """
+    __tablename__ = "journal_entries"
+
+    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=_uuid)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        GUID(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False,
+    )
+    entry_date: Mapped[datetime] = mapped_column(Date, nullable=False)
+    mood: Mapped[int | None] = mapped_column(nullable=True)          # 1-5
+    did: Mapped[str | None] = mapped_column(Text, nullable=True)      # bugün ne yaptım
+    thoughts: Mapped[str | None] = mapped_column(Text, nullable=True)  # aklımdan ne geçti
+    good: Mapped[str | None] = mapped_column(Text, nullable=True)     # iyi gelen bir şey
+    tags: Mapped[list | None] = mapped_column(PortableJSON, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "entry_date", name="uq_journal_user_date"),
+        Index("idx_journal_user_date", "user_id", "entry_date"),
     )
 
 

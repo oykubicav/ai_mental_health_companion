@@ -33,7 +33,7 @@ from fastapi.responses import JSONResponse
 from api import __version__
 from api.logging_setup import setup_logging, get_logger
 from api.middleware.request_id import RequestIdMiddleware
-from api.routes import health, chat, cards, feedback, consent,assessments,transparency,auth,exercises
+from api.routes import health, chat, cards, feedback, consent,assessments,transparency,auth,exercises,journal
 from api.routes import eval as eval_route
 
 
@@ -181,6 +181,7 @@ app.include_router(assessments.router)
 app.include_router(transparency.router)
 app.include_router(auth.router)
 app.include_router(exercises.router)
+app.include_router(journal.router)
 
 
 @app.get("/", include_in_schema=False)

@@ -23,6 +23,9 @@ class SafetyView(BaseModel):
     matched_card_ids: List[str]
     # Cevap bir kontrol sorusuysa arayüz onay kartını gösterir.
     needs_confirmation: bool = False
+    # Destekleyici ama egzersizsiz yol. Arayüz bu turda egzersiz
+    # bağlantısı önermez.
+    blocks_exercise: bool = False
 
 class IntentView(BaseModel):
     module: str

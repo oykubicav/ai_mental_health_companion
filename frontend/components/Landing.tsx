@@ -29,6 +29,12 @@ export default function Landing({ onStart }: { onStart: () => void }) {
               Egzersizler
             </a>
             <a
+              href="/gunluk"
+              className="hidden sm:flex px-3 h-9 items-center rounded-full text-[13px] font-medium text-cbt-textSecondary dark:text-cbt-dark-textSecondary hover:text-cbt-text dark:hover:text-cbt-dark-text transition-colors"
+            >
+              Günlük
+            </a>
+            <a
               href="/hakkinda"
               className="hidden sm:flex px-3 h-9 items-center rounded-full text-[13px] font-medium text-cbt-textSecondary dark:text-cbt-dark-textSecondary hover:text-cbt-text dark:hover:text-cbt-dark-text transition-colors"
             >

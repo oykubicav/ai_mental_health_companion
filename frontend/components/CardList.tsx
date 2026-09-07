@@ -134,14 +134,41 @@ export default function CardList() {
               </a>
             )}
           </div>
-          <span className="text-[15px] font-semibold tracking-tight text-cbt-text dark:text-cbt-dark-text">
+          <span className="display text-[18px] text-cbt-text dark:text-cbt-dark-text truncate max-w-[45%]">
             {showingList && selectedTopicInfo
               ? selectedTopicInfo.display_name_tr
-              : "Konular"}
+              : "Neva"}
           </span>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <a
+              href="/egzersizler"
+              className="hidden sm:flex px-3 h-9 items-center rounded-full text-[13px] font-medium text-cbt-textSecondary dark:text-cbt-dark-textSecondary hover:text-cbt-text dark:hover:text-cbt-dark-text transition-colors"
+            >
+              Egzersizler
+            </a>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
+
+      {!showingList && (
+        <div className="relative grain">
+          <div className="hero-orb hero-orb-1 animate-drift !w-[300px] !h-[300px] !top-[-20%] !left-[60%]" />
+          <div className="relative max-w-4xl mx-auto px-6 pt-16 pb-10">
+            <h1 className="display animate-hero-in text-[42px] sm:text-[52px] leading-[1.05] text-cbt-text dark:text-cbt-dark-text mb-5">
+              Neva ne biliyor
+            </h1>
+            <p
+              className="animate-hero-in text-[17px] text-cbt-textSecondary dark:text-cbt-dark-textSecondary leading-relaxed max-w-2xl"
+              style={{ animationDelay: "80ms" }}
+            >
+              Cevapların dayandığı bütün içerik burada, olduğu gibi. On sekiz
+              konu, her birinde on kart; hepsi bir klinik psikolog tarafından
+              okundu. Sohbete girmeden de okuyabilirsin.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Search */}
@@ -181,20 +208,20 @@ export default function CardList() {
               <button
                 key={t.topic}
                 onClick={() => setSelectedTopic(t.topic)}
-                className="text-left p-6 rounded-2xl bg-cbt-surface dark:bg-cbt-dark-surface border border-cbt-border/60 dark:border-cbt-dark-border/60 hover:border-cbt-borderStrong dark:hover:border-cbt-dark-borderStrong transition-all active:scale-[0.99] group animate-slide-up"
+                className="text-left p-6 rounded-[20px] bg-cbt-surface dark:bg-cbt-dark-surface border border-cbt-border/60 dark:border-cbt-dark-border/60 hover:border-cbt-borderStrong dark:hover:border-cbt-dark-borderStrong transition-all active:scale-[0.99] group animate-slide-up"
                 style={{
                   animationDelay: `${Math.min(i * 40, 400)}ms`,
                   animationFillMode: "backwards",
                 }}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[16px] font-semibold text-cbt-text dark:text-cbt-dark-text">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <span className="display text-[21px] leading-tight text-cbt-text dark:text-cbt-dark-text">
                     {t.display_name_tr}
                   </span>
                   <ChevronRight
                     size={16}
                     strokeWidth={2}
-                    className="text-cbt-textMuted dark:text-cbt-dark-textMuted group-hover:translate-x-0.5 transition-transform"
+                    className="shrink-0 text-cbt-textMuted dark:text-cbt-dark-textMuted group-hover:translate-x-0.5 transition-transform"
                   />
                 </div>
                 <p className="text-[13px] text-cbt-textSecondary dark:text-cbt-dark-textSecondary leading-relaxed">
@@ -233,7 +260,7 @@ export default function CardList() {
                       }}
                     >
                       <div>
-                        <div className="text-[15px] font-medium leading-snug text-cbt-text dark:text-cbt-dark-text">
+                        <div className="display text-[17px] leading-snug text-cbt-text dark:text-cbt-dark-text">
                           {c.title_tr}
                         </div>
                         <div className="mt-1 text-[12px] text-cbt-textMuted dark:text-cbt-dark-textMuted">
@@ -269,7 +296,7 @@ export default function CardList() {
           >
             <div className="border-b border-cbt-border/50 dark:border-cbt-dark-border/50 px-7 py-5 flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-[17px] font-semibold tracking-tight text-cbt-text dark:text-cbt-dark-text">
+                <h2 className="display text-[24px] leading-tight text-cbt-text dark:text-cbt-dark-text">
                   {openCard.title_tr}
                 </h2>
                 <div className="mt-1 text-[12px] text-cbt-textMuted dark:text-cbt-dark-textMuted">
@@ -292,6 +319,20 @@ export default function CardList() {
                   {openCard.safety_notes}
                 </div>
               )}
+
+              <div className="mt-8 pt-4 border-t border-cbt-border/50 dark:border-cbt-dark-border/50 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-cbt-textMuted dark:text-cbt-dark-textMuted whitespace-normal">
+                {openCard.review_status === "clinician_reviewed" && (
+                  <span className="text-cbt-success dark:text-cbt-dark-success">
+                    Klinik psikolog onaylı
+                  </span>
+                )}
+                <span className="font-mono">{openCard.id}</span>
+                {openCard.source_refs?.length > 0 && (
+                  <a href="/kaynaklar" className="underline underline-offset-4 hover:text-cbt-text dark:hover:text-cbt-dark-text">
+                    {openCard.source_refs.length} kaynak
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </div>

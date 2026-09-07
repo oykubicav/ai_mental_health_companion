@@ -19,6 +19,7 @@ export default function SiteFooter() {
             <FooterLink href="/hakkinda#nasil">Nasıl çalışır</FooterLink>
             <FooterLink href="/cards">Konular</FooterLink>
             <FooterLink href="/egzersizler">Egzersizler</FooterLink>
+            <FooterLink href="/gunluk">Günlük</FooterLink>
           </FooterColumn>
 
           <FooterColumn title="Güven">

@@ -66,10 +66,11 @@ export default function GizlilikPage() {
           görebilir, tek tuşla silebilirsin — sohbetlerin yerinde kalır.
         </p>
         <p>
-          Egzersizler sayfasındaki araçlara (düşünce kaydı, küçük adım, nefes)
+          Egzersiz araçlarına (düşünce kaydı, küçük adım, nefes) ve günlüğe
           yazdıkların da hesabına bağlı saklanıyor; sohbetlerle aynı kural:
-          sen silene kadar durur, tek tek silinebilir. Bu araçlar yapay zekâ
-          çağırmıyor — oraya yazdıkların Anthropic&apos;e gitmiyor.
+          sen silene kadar durur, tek tek silinebilir. Bu ikisi yapay zekâ
+          çağırmıyor — oraya yazdıkların Anthropic&apos;e gitmiyor, Neva
+          sohbette günlüğünü okumuyor.
         </p>
       </Block>
 

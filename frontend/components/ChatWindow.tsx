@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LayoutGrid, Trash2, Send, Bug, HelpCircle, Wind } from "lucide-react";
+import { LayoutGrid, Trash2, Send, Bug, HelpCircle, Wind, NotebookPen } from "lucide-react";
 import { postChat, deleteSession,getMySession } from "@/lib/api";
 import { getSessionId, setSessionId, clearSessionId } from "@/lib/session";
 import type { Turn } from "@/lib/types";
@@ -275,6 +275,11 @@ export default function ChatWindow() {
             <IconButton label="Egzersizler" href="/egzersizler">
               <Wind size={16} strokeWidth={2.2} />
             </IconButton>
+            {isAuthenticated && (
+              <IconButton label="Günlük" href="/gunluk">
+                <NotebookPen size={16} strokeWidth={2.2} />
+              </IconButton>
+            )}
             <Link
             href="/progress"
             className="text-sm text-cbt-textSecondary hover:text-cbt-text flex items-center gap-1"

@@ -22,6 +22,8 @@ import type {
   DeviceView,
   ExerciseKind,
   ExerciseEntry,
+  JournalEntry,
+  JournalUpsert,
 } from "./types";
 import { getAccessToken, setAccessToken, clearAccessToken } from "./auth";
 
@@ -394,6 +396,24 @@ export async function listExercises(kind?: ExerciseKind): Promise<{ entries: Exe
 
 export async function deleteExercise(id: string): Promise<{ status: string }> {
   return fetchJson<{ status: string }>(`/exercises/${id}`, { method: "DELETE" });
+}
+
+export async function saveJournalDay(
+  entryDate: string,
+  body: JournalUpsert
+): Promise<JournalEntry> {
+  return fetchJson<JournalEntry>(`/journal/${entryDate}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function listJournal(limit = 30): Promise<{ entries: JournalEntry[] }> {
+  return fetchJson<{ entries: JournalEntry[] }>(`/journal?limit=${limit}`);
+}
+
+export async function deleteJournalDay(entryDate: string): Promise<{ status: string }> {
+  return fetchJson<{ status: string }>(`/journal/${entryDate}`, { method: "DELETE" });
 }
 
 export async function changePassword(

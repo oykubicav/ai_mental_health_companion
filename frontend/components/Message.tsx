@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { AlertTriangle, ArrowUpRight } from "lucide-react";
 import type { Turn } from "@/lib/types";
 import { formatRelativeTime } from "@/lib/time";
 import DebugPanel from "./DebugPanel";
 import FeedbackButtons from "./FeedbackButtons";
+import { exerciseLinkFor } from "@/lib/exerciseLinks";
 
 export default function Message({
   turn,
@@ -30,6 +32,13 @@ export default function Message({
     const id = setInterval(() => setTick((v) => v + 1), 30000);
     return () => clearInterval(id);
   }, [turn.ts]);
+
+  // Cevapta kullanılan kartın bir aracı varsa altına bağlantı koyulur.
+  // Kriz ve egzersizsiz destek yollarında çıkmaz.
+  const exerciseLink = exerciseLinkFor(turn.chat.retrieved_card_ids, {
+    allowCbt: turn.chat.safety.allow_cbt,
+    blocksExercise: turn.chat.safety.blocks_exercise,
+  });
 
   return (
     <div className="space-y-3 animate-slide-up group/msg">
@@ -59,6 +68,26 @@ export default function Message({
           <div className="text-[15px] text-cbt-text dark:text-cbt-dark-text whitespace-pre-wrap leading-[1.55]">
             {turn.chat.response}
           </div>
+          {exerciseLink && (
+            <Link
+              href={exerciseLink.href}
+              className="mt-3.5 flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-cbt-surfaceMuted dark:bg-cbt-dark-surfaceMuted hover:bg-cbt-accentSoft dark:hover:bg-cbt-dark-accentSoft transition-colors group/ex"
+            >
+              <span className="min-w-0">
+                <span className="block text-[14px] font-medium text-cbt-text dark:text-cbt-dark-text">
+                  {exerciseLink.label}
+                </span>
+                <span className="block text-[12px] text-cbt-textSecondary dark:text-cbt-dark-textSecondary">
+                  {exerciseLink.note}
+                </span>
+              </span>
+              <ArrowUpRight
+                size={16}
+                strokeWidth={2}
+                className="shrink-0 text-cbt-textMuted dark:text-cbt-dark-textMuted group-hover/ex:text-cbt-accent dark:group-hover/ex:text-cbt-dark-accent transition-colors"
+              />
+            </Link>
+          )}
           <FeedbackButtons
             turnId={turn.chat.turn_id}
             sessionId={sessionId}

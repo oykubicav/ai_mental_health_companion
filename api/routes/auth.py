@@ -631,7 +631,7 @@ class CopingItem(BaseModel):
 
 
 class Milestone(BaseModel):
-    kind: str             # first_session | first_assessment | first_technique | first_helped | first_exercise | first_referral
+    kind: str             # first_session | first_assessment | first_technique | first_helped | first_exercise | first_journal | first_referral
     at: str
     detail: Optional[str] = None
 
@@ -716,6 +716,13 @@ def _milestones(db: Session, user_id) -> list[Milestone]:
         out.append(
             Milestone(kind="first_exercise", at=_iso_utc(ilk_egzersiz[0]), detail=ilk_egzersiz[1])
         )
+
+    from api.db.models import JournalEntry
+    ilk_gunluk = db.execute(
+        select(sqlfunc.min(JournalEntry.created_at)).where(JournalEntry.user_id == user_id)
+    ).scalar_one_or_none()
+    if ilk_gunluk:
+        out.append(Milestone(kind="first_journal", at=_iso_utc(ilk_gunluk)))
 
     ilk_yonlendirme = db.execute(
         select(sqlfunc.min(Turn.ts))

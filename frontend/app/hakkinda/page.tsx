@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import PageShell, { Block } from "@/components/PageShell";
 
 export const metadata = {
@@ -65,6 +67,30 @@ export default function HakkindaPage() {
         </p>
       </Block>
 
+      <Block heading="Ne ne için">
+        <p>
+          Neva üç parçadan oluşuyor ve hangisine ne zaman gideceğini bilmek
+          işini kolaylaştırır.
+        </p>
+        <ul className="not-prose grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+          <NavCard
+            href="/"
+            title="Sohbet"
+            body="Anlatmak istediğin bir şey olduğunda. Konuşma, sonu belli; yirmi dakika civarı."
+          />
+          <NavCard
+            href="/egzersizler"
+            title="Egzersizler"
+            body="Konuşmadan da kullanılır: nefes, düşünce kaydı, küçük adım planı."
+          />
+          <NavCard
+            href="/gunluk"
+            title="Günlük"
+            body="Her gün kısaca ne olduğunu yazdığın yer. Yapay zekâ okumaz."
+          />
+        </ul>
+      </Block>
+
       <Block heading="Kimin için">
         <p>
           Gündelik hayatını sürdürebilen ama kaygı, düşük ruh hali, uyku sorunu,
@@ -77,5 +103,28 @@ export default function HakkindaPage() {
         </p>
       </Block>
     </PageShell>
+  );
+}
+
+function NavCard({ href, title, body }: { href: string; title: string; body: string }) {
+  return (
+    <li>
+      <Link
+        href={href}
+        className="group h-full flex flex-col p-5 rounded-2xl bg-cbt-surface dark:bg-cbt-dark-surface border border-cbt-border/60 dark:border-cbt-dark-border/60 hover:border-cbt-borderStrong dark:hover:border-cbt-dark-borderStrong hover:-translate-y-0.5 transition-all"
+      >
+        <span className="flex items-center justify-between gap-2 mb-1.5">
+          <span className="display text-[20px] text-cbt-text dark:text-cbt-dark-text">{title}</span>
+          <ArrowUpRight
+            size={15}
+            strokeWidth={2}
+            className="shrink-0 text-cbt-textMuted dark:text-cbt-dark-textMuted group-hover:text-cbt-accent dark:group-hover:text-cbt-dark-accent transition-colors"
+          />
+        </span>
+        <span className="text-[13px] text-cbt-textSecondary dark:text-cbt-dark-textSecondary leading-relaxed">
+          {body}
+        </span>
+      </Link>
+    </li>
   );
 }

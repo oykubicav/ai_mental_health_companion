@@ -229,6 +229,7 @@ async def chat(
             highest_risk=turn.safety.highest_risk,
             matched_card_ids=turn.safety.safety_card_ids,
             needs_confirmation=getattr(turn.safety, "needs_confirmation", False),
+            blocks_exercise=getattr(turn.safety, "blocks_exercise", False),
         ),
         intent=IntentView(
             module=intent_module,

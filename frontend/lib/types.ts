@@ -20,6 +20,7 @@ export interface SafetyView {
   highest_risk: RiskLevel;
   matched_card_ids: string[];
   needs_confirmation?: boolean;
+  blocks_exercise?: boolean;
 }
 
 export interface IntentView {
@@ -238,6 +239,7 @@ export type MilestoneKind =
   | "first_technique"
   | "first_helped"
   | "first_exercise"
+  | "first_journal"
   | "first_referral";
 
 export interface Milestone {
@@ -292,4 +294,22 @@ export interface SmallStepPayload {
 export interface BreathingPayload {
   mode: string;
   seconds: number;
+}
+
+export interface JournalEntry {
+  entry_date: string;
+  mood: number | null;
+  did: string | null;
+  thoughts: string | null;
+  good: string | null;
+  tags: string[];
+  updated_at: string;
+}
+
+export interface JournalUpsert {
+  mood?: number;
+  did?: string;
+  thoughts?: string;
+  good?: string;
+  tags?: string[];
 }

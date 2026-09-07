@@ -70,6 +70,24 @@ export default function EgzersizlerPage() {
           </li>
         ))}
       </ul>
+      <section className="p-7 rounded-[24px] border border-dashed border-cbt-border dark:border-cbt-dark-border">
+        <div className="display text-[24px] text-cbt-text dark:text-cbt-dark-text mb-2">
+          Günlük
+        </div>
+        <p className="text-[14px] text-cbt-textSecondary dark:text-cbt-dark-textSecondary leading-relaxed mb-4">
+          Araç değil, alışkanlık: her gün ne olduğunu, aklından ne geçtiğini
+          ve iyi gelen bir şeyi kısaca yazabileceğin yer. Hesap gerektirir —
+          günler arasında durması gerekiyor.
+        </p>
+        <Link
+          href="/gunluk"
+          className="inline-flex items-center gap-1.5 text-[14px] text-cbt-accent dark:text-cbt-dark-accent hover:underline underline-offset-4"
+        >
+          Günlüğü aç
+          <ArrowUpRight size={14} strokeWidth={2} />
+        </Link>
+      </section>
+
       <p className="text-[13px] text-cbt-textMuted dark:text-cbt-dark-textMuted leading-relaxed">
         Bunlar kriz araçları değil. Kendine zarar verme düşüncen varsa nefes egzersizi değil,
         bir insan gerekir:{" "}
