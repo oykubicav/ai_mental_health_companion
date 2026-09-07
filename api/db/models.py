@@ -337,6 +337,30 @@ class Assessment(Base):
         Index("idx_assessments_kind", "kind"),
         Index("idx_assessments_taken_at", "taken_at"),
     )
+class ExerciseEntry(Base):
+    """Egzersiz sayfasındaki araçlarda kullanıcının yazdıkları.
+
+    Yalnızca hesabı olanlar için; anonim kullanıcı aracı kullanır ama
+    kayıt tutulmaz. Sohbetle aynı saklama kuralı: kullanıcı silene kadar.
+    Bu tablo LLM'e gitmez.
+    """
+    __tablename__ = "exercise_entries"
+
+    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=_uuid)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        GUID(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False,
+    )
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)  # thought_record | small_step | breathing
+    payload: Mapped[dict] = mapped_column(PortableJSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False,
+    )
+
+    __table_args__ = (
+        Index("idx_exercise_entries_user_created", "user_id", "created_at"),
+    )
+
+
 class RefreshToken(Base):
     """Oturum başına bir satır. Ham token saklanmıyor, SHA-256 hash'i tutuluyor —
     veritabanı sızarsa oturumlar ele geçirilemesin.

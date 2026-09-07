@@ -18,6 +18,7 @@ export default function SiteFooter() {
             <FooterLink href="/hakkinda">Neva nedir</FooterLink>
             <FooterLink href="/hakkinda#nasil">Nasıl çalışır</FooterLink>
             <FooterLink href="/cards">Konular</FooterLink>
+            <FooterLink href="/egzersizler">Egzersizler</FooterLink>
           </FooterColumn>
 
           <FooterColumn title="Güven">

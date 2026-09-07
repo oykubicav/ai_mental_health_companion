@@ -65,6 +65,12 @@ export default function GizlilikPage() {
           değildir ve yanılabilirler. Ne çıkarıldığını Gelişimim sayfasından
           görebilir, tek tuşla silebilirsin — sohbetlerin yerinde kalır.
         </p>
+        <p>
+          Egzersizler sayfasındaki araçlara (düşünce kaydı, küçük adım, nefes)
+          yazdıkların da hesabına bağlı saklanıyor; sohbetlerle aynı kural:
+          sen silene kadar durur, tek tek silinebilir. Bu araçlar yapay zekâ
+          çağırmıyor — oraya yazdıkların Anthropic&apos;e gitmiyor.
+        </p>
       </Block>
 
       <Block heading="Silme hakkı">

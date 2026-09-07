@@ -232,12 +232,27 @@ export interface CopingItem {
   verdict: string;
 }
 
+export type MilestoneKind =
+  | "first_session"
+  | "first_assessment"
+  | "first_technique"
+  | "first_helped"
+  | "first_exercise"
+  | "first_referral";
+
+export interface Milestone {
+  kind: MilestoneKind;
+  at: string;
+  detail: string | null;
+}
+
 export interface InsightsResponse {
   themes: ThemeCount[];
   coping: CopingItem[];
   triggers: string[];
   session_count: number;
   first_session_at: string | null;
+  milestones: Milestone[];
 }
 
 export interface DeviceView {
@@ -246,4 +261,35 @@ export interface DeviceView {
   created_at: string;
   last_used_at: string | null;
   current: boolean;
+}
+export type ExerciseKind = "thought_record" | "small_step" | "breathing";
+
+export interface ExerciseEntry {
+  id: string;
+  kind: ExerciseKind;
+  payload: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface ThoughtRecordPayload {
+  situation: string;
+  thought: string;
+  emotion: string;
+  intensity_before: number;
+  traps: string[];
+  evidence_for: string;
+  evidence_against: string;
+  alternative: string;
+  intensity_after: number;
+}
+
+export interface SmallStepPayload {
+  trigger: string;
+  action: string;
+  difficulty: number;
+}
+
+export interface BreathingPayload {
+  mode: string;
+  seconds: number;
 }

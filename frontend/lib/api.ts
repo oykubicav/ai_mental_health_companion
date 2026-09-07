@@ -20,6 +20,8 @@ import type {
   CopingItem,
   InsightsResponse,
   DeviceView,
+  ExerciseKind,
+  ExerciseEntry,
 } from "./types";
 import { getAccessToken, setAccessToken, clearAccessToken } from "./auth";
 
@@ -373,6 +375,25 @@ export async function revokeDevice(id: string): Promise<{ status: string }> {
     method: "DELETE",
     headers: CLIENT_HEADER,
   });
+}
+
+export async function createExercise(
+  kind: ExerciseKind,
+  payload: Record<string, unknown>
+): Promise<ExerciseEntry> {
+  return fetchJson<ExerciseEntry>("/exercises", {
+    method: "POST",
+    body: JSON.stringify({ kind, payload }),
+  });
+}
+
+export async function listExercises(kind?: ExerciseKind): Promise<{ entries: ExerciseEntry[] }> {
+  const qs = kind ? `?kind=${kind}` : "";
+  return fetchJson<{ entries: ExerciseEntry[] }>(`/exercises${qs}`);
+}
+
+export async function deleteExercise(id: string): Promise<{ status: string }> {
+  return fetchJson<{ status: string }>(`/exercises/${id}`, { method: "DELETE" });
 }
 
 export async function changePassword(

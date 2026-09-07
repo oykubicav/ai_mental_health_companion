@@ -630,12 +630,103 @@ class CopingItem(BaseModel):
     verdict: str          # yararlı | yararsız | denenmedi | deneyecek
 
 
+class Milestone(BaseModel):
+    kind: str             # first_session | first_assessment | first_technique | first_helped | first_exercise | first_referral
+    at: str
+    detail: Optional[str] = None
+
+
 class InsightsResponse(BaseModel):
     themes: list[ThemeCount]
     coping: list[CopingItem]
     triggers: list[str]
     session_count: int
     first_session_at: Optional[str] = None
+    milestones: list[Milestone] = []
+
+
+_REFERRAL_ROUTES = {
+    "crisis_referral",
+    "medical_emergency_referral",
+    "professional_or_emergency_referral",
+    "medical_professional_referral",
+    "abuse_safety_referral",
+    "professional_referral_supportive",
+}
+
+
+def _milestones(db: Session, user_id) -> list[Milestone]:
+    """Sayı değil, ilk'ler: ilk konuşma, ilk ölçüm, ilk denenen teknik,
+    ilk işe yarayan teknik, ilk uzmana yönlendirme. Sıralı döner.
+
+    Yönlendirme saklanmıyor: kullanıcı o anı da görsün, "her şey
+    yolundaydı" resmi çizmek istemiyoruz.
+    """
+    from api.db.models import Assessment, UserProfile
+
+    out: list[Milestone] = []
+
+    ilk_sohbet = db.execute(
+        select(sqlfunc.min(ChatSession.created_at)).where(ChatSession.user_id == user_id)
+    ).scalar_one_or_none()
+    if ilk_sohbet:
+        out.append(Milestone(kind="first_session", at=_iso_utc(ilk_sohbet)))
+
+    ilk_olcum = db.execute(
+        select(Assessment.taken_at, Assessment.kind)
+        .where(Assessment.user_id == user_id)
+        .order_by(Assessment.taken_at.asc())
+        .limit(1)
+    ).first()
+    if ilk_olcum:
+        out.append(
+            Milestone(kind="first_assessment", at=_iso_utc(ilk_olcum[0]), detail=ilk_olcum[1].upper())
+        )
+
+    profiller = db.execute(
+        select(UserProfile)
+        .join(ChatSession, UserProfile.session_id == ChatSession.id)
+        .where(ChatSession.user_id == user_id)
+        .order_by(UserProfile.created_at.asc())
+    ).scalars().all()
+    denenen = None
+    yarayan = None
+    for pr in profiller:
+        for teknik, karar in (pr.coping_tried or {}).items():
+            etiket = _TECHNIQUE_LABELS.get(teknik, teknik.replace("_", " "))
+            if denenen is None and karar in ("yararlı", "yararsız"):
+                denenen = (pr.updated_at or pr.created_at, etiket)
+            if yarayan is None and karar == "yararlı":
+                yarayan = (pr.updated_at or pr.created_at, etiket)
+        if denenen and yarayan:
+            break
+    if denenen:
+        out.append(Milestone(kind="first_technique", at=_iso_utc(denenen[0]), detail=denenen[1]))
+    if yarayan:
+        out.append(Milestone(kind="first_helped", at=_iso_utc(yarayan[0]), detail=yarayan[1]))
+
+    from api.db.models import ExerciseEntry
+    ilk_egzersiz = db.execute(
+        select(ExerciseEntry.created_at, ExerciseEntry.kind)
+        .where(ExerciseEntry.user_id == user_id)
+        .order_by(ExerciseEntry.created_at.asc())
+        .limit(1)
+    ).first()
+    if ilk_egzersiz:
+        out.append(
+            Milestone(kind="first_exercise", at=_iso_utc(ilk_egzersiz[0]), detail=ilk_egzersiz[1])
+        )
+
+    ilk_yonlendirme = db.execute(
+        select(sqlfunc.min(Turn.ts))
+        .join(ChatSession, Turn.session_id == ChatSession.id)
+        .where(ChatSession.user_id == user_id, Turn.safety_route.in_(_REFERRAL_ROUTES))
+    ).scalar_one_or_none()
+    if ilk_yonlendirme:
+        out.append(Milestone(kind="first_referral", at=_iso_utc(ilk_yonlendirme)))
+
+    out.sort(key=lambda m: m.at)
+    return out
 
 @router.get("/me/insights", response_model=InsightsResponse)
 async def my_insights(
@@ -666,6 +757,8 @@ async def my_insights(
                 ChatSession.user_id == user.id
             )
         ).scalar_one_or_none()
+
+        kilometre_taslari = _milestones(db, user.id)
 
         tema_sayaci: dict[str, int] = {}
         coping: dict[str, str] = {}
@@ -700,6 +793,7 @@ async def my_insights(
         triggers=tetikleyici[:20],
         session_count=len(rows),
         first_session_at=_iso_utc(ilk),
+        milestones=kilometre_taslari,
     )
 
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LayoutGrid, Trash2, Send, Bug, HelpCircle } from "lucide-react";
+import { LayoutGrid, Trash2, Send, Bug, HelpCircle, Wind } from "lucide-react";
 import { postChat, deleteSession,getMySession } from "@/lib/api";
 import { getSessionId, setSessionId, clearSessionId } from "@/lib/session";
 import type { Turn } from "@/lib/types";
@@ -271,6 +271,9 @@ export default function ChatWindow() {
             )}
             <IconButton label="Konular" href="/cards">
               <LayoutGrid size={16} strokeWidth={2.2} />
+            </IconButton>
+            <IconButton label="Egzersizler" href="/egzersizler">
+              <Wind size={16} strokeWidth={2.2} />
             </IconButton>
             <Link
             href="/progress"

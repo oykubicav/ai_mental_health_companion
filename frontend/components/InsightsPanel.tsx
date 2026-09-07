@@ -3,7 +3,28 @@
 import { useCallback, useEffect, useState } from "react";
 import { Loader2, Trash2 } from "lucide-react";
 import { getMyInsights, deleteMyInsights } from "@/lib/api";
-import type { InsightsResponse } from "@/lib/types";
+import type { InsightsResponse, Milestone } from "@/lib/types";
+
+// Sayı değil, ilk'ler. Seri, rozet ya da "kaç gündür" yok — Neva'nın
+// kullanıcıyı tutmaya çalışmama sözü burada da geçerli.
+const EXERCISE_NAMES: Record<string, string> = {
+  thought_record: "düşünce kaydı",
+  small_step: "küçük adım planı",
+  breathing: "nefes",
+};
+
+const MILESTONE_TEXT: Record<Milestone["kind"], (detail: string | null) => string> = {
+  first_session: () => "İlk konuşma.",
+  first_assessment: (d) => `İlk ölçüm${d ? ` (${d})` : ""}.`,
+  first_technique: (d) => `İlk denediğin teknik${d ? `: ${d.toLowerCase()}` : ""}.`,
+  first_helped: (d) => `İlk işe yaradı dediğin teknik${d ? `: ${d.toLowerCase()}` : ""}.`,
+  first_exercise: (d) => `İlk egzersiz${d ? `: ${EXERCISE_NAMES[d] ?? d}` : ""}.`,
+  first_referral: () => "Neva seni bir uzmana yönlendirdi. Bunu saklamıyoruz.",
+};
+
+function tarih(iso: string): string {
+  return new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+}
 
 const VERDICT_LABELS: Record<string, string> = {
   "yararlı": "işe yaradı",
@@ -61,7 +82,8 @@ export default function InsightsPanel() {
   const bosMu =
     data.themes.length === 0 &&
     data.coping.length === 0 &&
-    data.triggers.length === 0;
+    data.triggers.length === 0 &&
+    data.milestones.length === 0;
 
   if (bosMu) {
     return (
@@ -74,6 +96,33 @@ export default function InsightsPanel() {
 
   return (
     <div className="space-y-8">
+      {data.milestones.length > 0 && (
+        <section>
+          <h3 className="text-[13px] font-medium text-cbt-textMuted dark:text-cbt-dark-textMuted mb-4">
+            Yolculuk
+          </h3>
+          <ol className="relative border-l border-cbt-border dark:border-cbt-dark-border ml-1.5 space-y-5">
+            {data.milestones.map((m) => (
+              <li key={m.kind} className="pl-5 relative">
+                <span
+                  className={`absolute -left-[5px] top-[7px] w-[9px] h-[9px] rounded-full ${
+                    m.kind === "first_referral"
+                      ? "bg-cbt-warning dark:bg-cbt-dark-warning"
+                      : "bg-cbt-accent dark:bg-cbt-dark-accent"
+                  }`}
+                />
+                <div className="display text-[13px] text-cbt-textMuted dark:text-cbt-dark-textMuted tabular-nums">
+                  {tarih(m.at)}
+                </div>
+                <div className="text-[14px] text-cbt-text dark:text-cbt-dark-text">
+                  {MILESTONE_TEXT[m.kind]?.(m.detail) ?? m.kind}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
       {data.coping.length > 0 && (
         <section>
           <h3 className="text-[13px] font-medium text-cbt-textMuted dark:text-cbt-dark-textMuted mb-3">
