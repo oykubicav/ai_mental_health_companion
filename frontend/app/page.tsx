@@ -9,7 +9,7 @@ import Landing from "@/components/Landing";
 import Onboarding from "@/components/Onboarding";
 import { hasDecided } from "@/lib/assessments";
 import AssessmentOptInModal from "@/components/AssessmentOptInModal";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/AuthProvider";
 
 type Stage = "landing" | "consent" | "onboarding" | "chat";
 

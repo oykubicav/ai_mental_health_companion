@@ -6,7 +6,7 @@ import { getMyDevices, revokeDevice, changePassword } from "@/lib/api";
 import { setAccessToken } from "@/lib/auth";
 import { deviceLabel } from "@/lib/devices";
 import { formatRelativeTime } from "@/lib/time";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/AuthProvider";
 import type { DeviceView } from "@/lib/types";
 
 export default function AccountSecurity() {

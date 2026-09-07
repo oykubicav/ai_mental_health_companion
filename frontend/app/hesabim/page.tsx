@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/AuthProvider";
 import { FOCUS_OPTIONS } from "@/lib/profile";
 import AccountSecurity from "@/components/AccountSecurity";
 

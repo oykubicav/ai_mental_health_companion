@@ -10,7 +10,7 @@ import AssessmentTrend from "@/components/AssessmentTrend";
 import AssessmentModal from "@/components/AssessmentModal";
 import type { AssessmentKind } from "@/lib/types";
 import InsightsPanel from "@/components/InsightsPanel";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/AuthProvider";
 
 export default function ProgressPage() {
   const { isAuthenticated, loading: authLoading } = useAuth();

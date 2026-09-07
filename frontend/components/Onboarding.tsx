@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FOCUS_OPTIONS } from "@/lib/profile";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/AuthProvider";
 
 export default function Onboarding({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState<0 | 1>(0);

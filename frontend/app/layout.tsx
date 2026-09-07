@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/hooks/AuthProvider";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -37,7 +38,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="min-h-full bg-cbt-bg text-cbt-text dark:bg-cbt-dark-bg dark:text-cbt-dark-text font-sans transition-colors">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

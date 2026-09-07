@@ -15,7 +15,7 @@ import AssessmentReminderBanner from "./AssessmentReminderBanner";
 import TransparencyPanel from "./TransparencyPanel";
 import SessionHandoff from "./SessionHandoff";
 import CrisisConfirm from "./CrisisConfirm";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/AuthProvider";
 import { LogIn, LogOut, User } from "lucide-react";
 import { History } from "lucide-react";
 import HistoryPanel from "./HistoryPanel";
