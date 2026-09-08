@@ -51,7 +51,7 @@ export default function ChatWindow() {
   const [sessionId, setSid] = useState<string>("");
   const [showDebug, setShowDebug] = useState(false);
   const [welcome, setWelcome] = useState(
-    "Merhaba, hoş geldin. Bugün seni buraya getiren ne? Anlatmak istediğin neyse dinliyorum."
+    "Merhaba, ben Neva. Bugün seni buraya getiren ne? Anlatmak istediğin neyse dinliyorum."
   );
   const [boundary, setBoundary] = useState("normal");
   const [handoffDismissed, setHandoffDismissed] = useState(false);
