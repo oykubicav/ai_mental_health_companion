@@ -341,7 +341,54 @@ Mesaj: "Sonuç açıklanacak diye günlerdir uyuyamıyorum, ailem ne der diye d�
 {"primary_module":"exam_anxiety","secondary_modules":["insomnia"],"subintent":"ambiguous_symptom","conversation_state":"neutral","confidence":0.88,"rationale":"sınav sonucu beklentisi + aile baskısı"}
 
 Mesaj: "Deprem sonrası her sallantıda panikliyorum, iyi kişileri düşünemiyorum."
-{"primary_module":"trauma_awareness","secondary_modules":["panic"],"subintent":"ambiguous_symptom","conversation_state":"neutral","confidence":0.9,"rationale":"deprem travma tepkileri — panic cross olabilir"}"""
+{"primary_module":"trauma_awareness","secondary_modules":["panic"],"subintent":"ambiguous_symptom","conversation_state":"neutral","confidence":0.9,"rationale":"deprem travma tepkileri — panic cross olabilir"}
+
+Yukarıdaki örnekler modül ve subintent seçmeyi gösteriyor; hepsinde
+konuşma durumu nötr. Aşağıdakiler aynı formatta ama nötr olmayan durumlar
+için. İkisi de aynı çıktı şeması — modül ve durum birbirinden bağımsız
+seçiliyor.
+
+Mesaj: "Dün akşamki tartışmayı sabaha kadar zihnimde döndürdüm, her seferinde aynı yere geliyorum."
+{"primary_module":"relationship_stress","secondary_modules":["gad"],"subintent":"ambiguous_symptom","conversation_state":"ruminating","confidence":0.85,"rationale":"aynı sahneyi tekrarlıyor, ilerleme yok"}
+
+Mesaj: "Tahliller temiz çıktı ama sen ne dersin, gerçekten önemli bir şey yok değil mi?"
+{"primary_module":"health_anxiety","secondary_modules":[],"subintent":"ambiguous_symptom","conversation_state":"reassurance_seeking","confidence":0.9,"rationale":"tıbbi onaya rağmen teyit istiyor"}
+
+Mesaj: "Söylediğin nefes çalışmasını üç akşam üst üste yaptım, bende bir karşılığı olmadı."
+{"primary_module":"panic","secondary_modules":[],"subintent":"exercise_request","conversation_state":"technique_failed","confidence":0.9,"rationale":"deneme var, sonuç olumsuz"}
+
+Mesaj: "Yanlış anlaşıldı galiba, işten korktuğumu söylemedim; zorlanan yer toplantıda söz almak."
+{"primary_module":"social_anxiety","secondary_modules":["work_stress"],"subintent":"ambiguous_symptom","conversation_state":"misunderstood","confidence":0.88,"rationale":"önceki çıkarımı düzeltiyor"}
+
+Mesaj: "Bir uygulamanın bunu çözebileceğine pek ihtimal vermiyorum doğrusu."
+{"primary_module":"unknown","secondary_modules":["depression"],"subintent":"unknown","conversation_state":"skeptical","confidence":0.8,"rationale":"araca yönelik şüphe, düşmanca değil"}
+
+Mesaj: "Sınav yaklaşıyor, annem hastanede, kirayı denkleştiremedim; hangisinden başlayacağımı bilemiyorum."
+{"primary_module":"unknown","secondary_modules":["exam_anxiety","financial_stress"],"subintent":"ambiguous_symptom","conversation_state":"overwhelmed","confidence":0.85,"rationale":"birden çok yük aynı anda, sıralama yok"}
+
+Mesaj: "Bu hafta iki kere yürüyüşe çıkabildim, akşamlar eskisi kadar ağır geçmedi."
+{"primary_module":"depression","secondary_modules":[],"subintent":"ambiguous_symptom","conversation_state":"reporting_progress","confidence":0.88,"rationale":"davranışsal aktivasyon işe yaramış"}
+
+Mesaj: "Aylar oldu buraya uğramayalı, araya bir sürü şey girdi, yeniden deneyeyim dedim."
+{"primary_module":"unknown","secondary_modules":[],"subintent":"unknown","conversation_state":"returning","confidence":0.85,"rationale":"aradan sonra dönüş, konu henüz yok"}
+
+Mesaj: "Fark ettim ki asıl sıkıntı toplantının kendisi değil, bir önceki akşam yaptığım hazırlık."
+{"primary_module":"work_stress","secondary_modules":["social_anxiety"],"subintent":"ambiguous_symptom","conversation_state":"formulating","confidence":0.85,"rationale":"kendi bağlantısını kuruyor"}
+
+Mesaj: "Geçen kış da neredeyse aynısı olmuştu, birkaç haftada kendiliğinden düzelmişti."
+{"primary_module":"health_anxiety","secondary_modules":[],"subintent":"ambiguous_symptom","conversation_state":"own_evidence","confidence":0.85,"rationale":"kendi geçmişinden karşı kanıt"}
+
+Mesaj: "Randevu almam gerektiğini biliyorum, her hafta diyorum ama bir türlü telefona sarılmıyorum."
+{"primary_module":"procrastination","secondary_modules":[],"subintent":"ambiguous_symptom","conversation_state":"ambivalent","confidence":0.85,"rationale":"niyet var, hareket yok — evet ama"}
+
+Mesaj: "Bir şey var da ne olduğuna karar veremiyorum, konuşunca daha da karışıyor."
+{"primary_module":"unknown","secondary_modules":[],"subintent":"unknown","conversation_state":"vague","confidence":0.8,"rationale":"adlandıramıyor, örüntü ya da talep yok"}
+
+Mesaj: "peki"
+{"primary_module":"unknown","secondary_modules":[],"subintent":"unknown","conversation_state":"withdrawn","confidence":0.8,"rationale":"tek kelime, içerik taşımıyor"}
+
+Mesaj: "Yeterince konuştuk sanırım, gerisini kendim düşüneyim."
+{"primary_module":"unknown","secondary_modules":[],"subintent":"unknown","conversation_state":"winding_down","confidence":0.88,"rationale":"kapanış işareti"}"""
 
 
 

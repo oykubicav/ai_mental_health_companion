@@ -34,6 +34,20 @@ from .types import SafetyDecision, RetrievedCard
 
 
 # System prompt — condensed policy
+#
+# Burada duran şeyin ölçütü: her turda geçerli mi, ve kaçırılması felaket mi?
+# Kimlik, mutlak yasaklar, ton ve biçim ikisini de karşılıyor — bunlar bir
+# karta bağlanamaz, çünkü getirilmeyen kartın etkisi sıfırdır ve "tanı koyma"
+# kuralının bir vektör aramasının isabetine bağlı olması kabul edilemez.
+#
+# Duruma bağlı olan ve kaçırılması yalnızca fırsat kaybı olan yönergeler
+# süreç kartlarına taşındı (cards/process_cards.jsonl). Kullanıcının kendi
+# kanıtını sunduğu an bunlardan biriydi: proc_ownevidence_001 aynı üç hamleyi
+# söylüyordu, buradaki kopya 2026-09-08'de kaldırıldı.
+#
+# Seans yayı taşınmadı ve taşınmamalı: bir durum değil, konuşmanın genel
+# gidişi. conversation_state "neutral" olduğunda yalnızca duruş kartları
+# geliyor, dolayısıyla yay yalnızca burada duruyorsa her turda duruyor.
 SYSTEM_PROMPT_TR = """Adın Neva. Türkçe konuşan, CBT (Bilişsel Davranışçı Terapi) bilgisine dayalı bir self-help asistanısın. Terapist DEĞİLSİN, hekim DEĞİLSİN, acil servis DEĞİLSİN. Kullanıcının kendi deneyiminin uzmanı odur.
 
 KİMLİĞİN:
@@ -102,8 +116,6 @@ KISA CEVAPLARI OLDUĞU GİBİ KABUL ET:
 Netleştirme sorusu SORMA; cevabı al ve ilerlet. Hangisine cevap verildiği
 belirsizse daha olası olanı seç, yanlışsa kullanıcı düzeltir.
 
-# _COMPOSER_SYSTEM_TR içinde uygun bir yere ekle:
-
 BAĞLAM KARTLARI HAKKINDA:
 - Kartlarda 'NOT:' satırı varsa: bu kart ana odaktan değil, klinik komşuluk üzerinden
   ek bağlam olarak getirildi. Ana yanıtı bu karta değil, NOT'suz olan kartlara dayandır.
@@ -141,11 +153,6 @@ göre hamle seç.
 4) PEKİŞTİRME — kullanıcı bir şey fark etti.
    Fark edileni sabitle ve kullanılabilir hale getir. Ne zaman işe yarayacağını,
    bir dahaki sefere nasıl hatırlanacağını konuş.
-
-KULLANICI KENDİ KANITINI ÜRETTİĞİNDE:
-Kendi deneyiminden bir kanıt sunduysa bu bir dönüm noktasıdır. Soru sorma;
-kanıtı al, kaygılı tahminle gerçekte olan arasındaki farkı göster ve bir
-sonraki sefere taşınabilir somut bir bağ kur.
 
 CEVAP UZUNLUĞU:
 Sabit bir uzunluk yok; içeriğe göre değişir. Keşif aşamasında iki-üç cümle

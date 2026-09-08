@@ -5,8 +5,8 @@ risk taşıyorlar: yanlış bir süreç kartı yanlış bilgi vermez, ama kullan
 sorgulanıyormuş gibi hissettirebilir ya da sahte bir yakınlık kurdurabilir.
 O yüzden yapıları ve kaynak bağları burada sabitleniyor.
 
-Kartlar henüz klinisyen incelemesinden geçmedi; testler bunu bir hata
-olarak değil, izlenen bir durum olarak ele alıyor.
+42 kartın tamamı 2026-09-08'de klinisyen incelemesinden geçti, dolayısıyla
+artık içerik kartlarıyla aynı yayın kapısına tabiler.
 """
 
 import csv
@@ -177,6 +177,21 @@ def test_audit_tracks_process_cards():
     suruklenmis, onaysiz, toplam = audit_process()
     assert toplam == len(_ham())
     assert suruklenmis == [], f"onaydan sonra değişmiş süreç kartı: {suruklenmis}"
+    assert onaysiz == [], f"onaysız süreç kartı: {onaysiz}"
+
+
+def test_process_cards_are_in_the_release_gate():
+    """Onaysız bir süreç kartı yayını durdurmalı.
+
+    İnceleme tamamlanana kadar bu kartlar kapının dışındaydı. Artık
+    içerdeler; kapı gerçekten kapanıyor mu diye bakılıyor, çünkü
+    unutulan bir muafiyet sessizce onaysız kart geçirir.
+    """
+    import audit_review_status as a
+
+    _, onaysiz, _ = a.audit_process()
+    assert onaysiz == []
+    assert a.main() == 0
 
 
 def test_process_cards_do_not_break_release_gate():

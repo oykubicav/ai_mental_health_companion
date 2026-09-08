@@ -165,6 +165,44 @@ def test_every_fewshot_example_carries_conversation_state():
     assert not eksik, f"{len(eksik)} örnekte conversation_state yok"
 
 
+def test_every_state_has_a_full_json_example():
+    """Tanım listesinde geçmek yetmiyor; model çıktı örneklerini taklit ediyor.
+
+    İlk kurulumda 41 örneğin 39'u neutral'dı ve 14 durumun tek bir tam
+    çıktı örneği yoktu. Model tanımları okusa da üst üste "neutral"
+    gördüğü için oraya kaçıyordu; neutral'a kaçış da hiç kart gelmemesi
+    demek, yani en pahalı hata.
+    """
+    import re
+
+    ornekler = [
+        s for s in re.findall(r'^\{"primary_module".*$', _prompt(), re.M)
+        if '"..."' not in s
+    ]
+    kapsanan = {
+        re.search(r'"conversation_state":\s*"([^"]+)"', o).group(1) for o in ornekler
+    }
+    eksik = [d for d in CONVERSATION_STATES if d not in kapsanan]
+    assert not eksik, f"tam çıktı örneği olmayan durum: {eksik}"
+
+
+def test_example_values_are_in_vocabulary():
+    """Sözlük dışı bir değer örnekte geçerse model onu üretmeyi öğrenir."""
+    import json as _json
+    import re
+
+    from pipeline.intent_classifier import MODULES, SUBINTENTS
+
+    for satir in re.findall(r'^\{"primary_module".*$', _prompt(), re.M):
+        if '"..."' in satir:
+            continue
+        d = _json.loads(satir)
+        assert d["primary_module"] in MODULES, satir
+        assert d["subintent"] in SUBINTENTS, satir
+        assert d["conversation_state"] in CONVERSATION_STATES, satir
+        assert all(m in MODULES for m in d["secondary_modules"]), satir
+
+
 def test_failing_states_have_dedicated_examples():
     """İlk ölçümde 0/5 alan durumların prompt'ta örneği olmalı."""
     prompt = _prompt()

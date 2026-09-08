@@ -81,3 +81,20 @@ def test_question_frequency_rule_is_stated_once():
     """Aynı kural iki başlık altında tekrarlanmamalı."""
     assert "SORU SIKLIĞI" not in SYSTEM_PROMPT_TR
     assert SYSTEM_PROMPT_TR.count("SORU SORMA DENGESİ") == 1
+
+
+def test_prompt_has_no_editing_notes():
+    """Prompt'a düzenleme notu sızmamalı.
+
+    "# _COMPOSER_SYSTEM_TR içinde uygun bir yere ekle:" satırı üç tırnağın
+    içinde kalmıştı ve her turda modele gidiyordu — üstelik o adda bir
+    değişken yok. Modele kendi kaynak kodundan bahsetmek en iyi ihtimalle
+    gürültü, en kötüsünde sisteme dair sızdırılabilir bilgi.
+    """
+    from pipeline.composer import SYSTEM_PROMPT_TR
+
+    for satir in SYSTEM_PROMPT_TR.splitlines():
+        s = satir.strip()
+        assert not s.startswith("#"), f"prompt'ta kod yorumu: {s}"
+    for terim in ["_COMPOSER_SYSTEM_TR", "SYSTEM_PROMPT_TR", "TODO", "FIXME"]:
+        assert terim not in SYSTEM_PROMPT_TR, f"prompt'ta iç referans: {terim}"

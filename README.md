@@ -243,7 +243,8 @@ Kept honest, in priority order:
    | 1 | 55% | 6 | baseline |
    | 2 | 84% | 6 | few-shot examples fixed |
    | 3 | 78% | 8 | two definitions narrowed |
-   | 4 | 87% | **0** | deterministic rule layer added |
+   | 4 | 87% | 0 | deterministic rule layer added |
+   | 5 | 93% | **0** | a worked example for every state |
 
    Run 1's failure was a bug, not ambiguity: the field was in the output schema but
    in none of the 41 few-shot examples, so the model omitted it and the parser
@@ -264,6 +265,38 @@ Kept honest, in priority order:
    run's raw output with rules applied; the rule-covered states are deterministic, so
    those figures are exact and will not drift. High-cost errors went to zero and the
    remaining 11 are all medium or low cost.
+
+   **Run 4's 87% does not generalize, and the gap is the interesting part.** The
+   rules were tuned on the eval set, so they catch 100% of covered states there. On
+   15 paraphrases written afterwards — same states, different morphology — they catch
+   3. Recall against unseen phrasing is roughly 20%. Turkish is agglutinative and the
+   space of ways to say "I tried it and it didn't help" is not enumerable by regex.
+
+   The layer is still worth having, because of its failure mode rather than its hit
+   rate: an unmatched message falls through to the LLM unchanged, so coverage can
+   never drop below the model's own. The only harm a rule can do is override a
+   correct model answer, which is why the acceptance bar was zero false positives
+   rather than high recall — including on those 15 paraphrases. The honest
+   expectation in production is the model's 78% plus a narrow deterministic floor
+   under the clinically expensive states, not 87%. Widening the patterns would trade
+   the cheap failure for the expensive one; the next move is better few-shot coverage
+   on the model side instead.
+
+   Run 5 is that move, and it found a second self-inflicted bug. The prompt's 41
+   worked examples were originally written to teach module and subintent selection;
+   `conversation_state` was appended to them afterwards, and because those messages
+   were genuinely neutral, 39 of 41 examples showed `neutral`. The model was reading
+   17 state definitions and then watching the answer be `neutral` thirty-nine times.
+   Adding one worked example per state took accuracy to 93%, and — the part that
+   matters — escapes to `neutral` went to zero, as did high-cost errors. The feared
+   over-correction did not appear: genuinely neutral messages still score 6/6. All
+   six remaining errors are adjacent-state confusions that select a similar card
+   (`ambivalent` → `vague`, `own_evidence` → `formulating`).
+
+   The caveat on 93% is the same as on 87%, plus one more: the prompt examples and
+   the eval set share an author, so they share a register even where no sentence
+   overlaps. The number to trust is the shape of the error distribution, not its
+   size.
 
    Rules are held to a stricter bar than the model, because a rule *overrides*:
    zero false positives on the eval set, plus a held-out set written after the rules
