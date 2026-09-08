@@ -153,3 +153,41 @@ def test_first_assessment_milestone(client, auth, sid):
     body = client.get("/auth/me/insights", headers=auth["headers"]).json()
     tas = [m for m in body["milestones"] if m["kind"] == "first_assessment"]
     assert tas and tas[0]["detail"] == "PHQ9"
+
+
+def test_authenticated_needs_no_session(client, auth):
+    """Girişli kullanıcı hiç konuşmadan ölçüm yapabilmeli."""
+    r = client.post(
+        "/assessments",
+        json={"kind": "phq9", "answers": HAFIF},
+        headers=auth["headers"],
+    )
+    assert r.status_code == 200, r.text
+    assert client.get("/assessments", headers=auth["headers"]).json()[0]["total_score"] == 8
+
+
+def test_no_empty_session_is_created(client, auth):
+    client.post("/assessments", json={"kind": "phq9", "answers": HAFIF}, headers=auth["headers"])
+
+    from api import db as _db
+    from api.db.models import ChatSession
+    with _db.get_sessionmaker()() as s:
+        assert s.query(ChatSession).count() == 0, "ölçüm için boş sohbet açılmış"
+
+    # Sohbetlerim listesinde de hiçbir şey görünmemeli.
+    assert client.get("/auth/sessions", headers=auth["headers"]).json()["total"] == 0
+
+
+def test_anonymous_still_requires_session(client):
+    r = client.post("/assessments", json={"kind": "phq9", "answers": HAFIF})
+    assert r.status_code == 400
+
+
+def test_assessment_from_chat_keeps_session_link(client, auth, sid):
+    """Sohbetin içinden yapılan ölçüm oturuma bağlı kalmalı."""
+    _submit(client, sid, headers=auth["headers"])
+
+    from api import db as _db
+    from api.db.models import Assessment
+    with _db.get_sessionmaker()() as s:
+        assert str(s.query(Assessment).one().session_id) == sid

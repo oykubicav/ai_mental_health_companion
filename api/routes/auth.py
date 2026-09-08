@@ -37,7 +37,7 @@ from api.auth.cookies import (
 )
 from api.db.models import User,ChatSession, Turn
 from api.deps import session_store_dep
-from api.session import InMemorySessionStore
+from api.session import InMemorySessionStore, SITTING_GAP_SECONDS, _as_utc
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 log = logging.getLogger(__name__)
@@ -420,6 +420,60 @@ async def reset_password(
 
     return {"status": "ok", "message": "Şifre başarıyla sıfırlandı"}
 
+class CurrentSessionResponse(BaseModel):
+    """Devam edilecek sohbet. Yoksa session_id null döner."""
+    session_id: Optional[str] = None
+    last_active: Optional[str] = None
+    turn_count: int = 0
+
+
+@router.get("/sessions/current", response_model=CurrentSessionResponse)
+async def current_session(
+    user: User = Depends(get_current_user),
+    store: InMemorySessionStore = Depends(session_store_dep),
+):
+    """Hesabın açık sohbeti — cihazdan bağımsız.
+
+    "Şu an hangi sohbetteyim" bilgisi tarayıcıda tutuluyordu; tarayıcı
+    verisi silinince ya da başka cihazdan girilince kayboluyordu. Oysa
+    sohbetlerin kendisi sunucuda duruyor. Burası tek doğru kaynak.
+
+    Son mesajın üzerinden bir oturuş boşluğundan fazla geçtiyse o sohbet
+    kapanmış sayılır ve null döner — kullanıcı yeni bir sohbete başlar.
+    Bu, seans yayının sıfırlanma kuralıyla aynı eşik.
+    """
+    factory = store._SessionLocal()
+    with factory() as db:
+        # Son mesaj damgalarına göre sırala; eşitlikte sonradan açılan
+        # sohbet kazanır. Damgalar SQLite'ta saniye çözünürlüğünde,
+        # aynı dakika içinde açılan iki sohbet eşit görünebiliyor.
+        row = db.execute(
+            select(
+                Turn.session_id,
+                sqlfunc.max(Turn.ts).label("son"),
+                sqlfunc.count(Turn.id),
+                ChatSession.created_at,
+            )
+            .join(ChatSession, Turn.session_id == ChatSession.id)
+            .where(ChatSession.user_id == user.id)
+            .group_by(Turn.session_id, ChatSession.created_at)
+            .order_by(sqlfunc.max(Turn.ts).desc(), ChatSession.created_at.desc())
+            .limit(1)
+        ).first()
+
+    if row is None:
+        return CurrentSessionResponse()
+
+    sid, son, adet, _ = row
+    son = _as_utc(son) if son is not None else None
+    if son is None or (datetime.now(timezone.utc) - son).total_seconds() > SITTING_GAP_SECONDS:
+        return CurrentSessionResponse()
+
+    return CurrentSessionResponse(
+        session_id=str(sid), last_active=_iso_utc(son), turn_count=adet
+    )
+
+
 @router.get("/sessions", response_model=SessionListResponse)
 async def list_my_sessions(
     limit: int = Query(10, ge=1, le=100),
@@ -429,12 +483,18 @@ async def list_my_sessions(
 ):
     factory = store._SessionLocal()
     with factory() as db:
+        # Mesajsız oturumlar listelenmiyor: geçmişte ölçüm gibi yan
+        # işlemler için açılmış boş sohbetler kullanıcıya "hiç yapmadığı
+        # konuşma" olarak görünüyordu.
+        dolu = select(Turn.session_id).distinct().scalar_subquery()
         total = db.execute(
-            select(sqlfunc.count(ChatSession.id)).where(ChatSession.user_id == user.id)
+            select(sqlfunc.count(ChatSession.id)).where(
+                ChatSession.user_id == user.id, ChatSession.id.in_(dolu)
+            )
         ).scalar_one()
         rows= db.execute(
             select(ChatSession)
-            .where(ChatSession.user_id == user.id)
+            .where(ChatSession.user_id == user.id, ChatSession.id.in_(dolu))
             .order_by(ChatSession.last_active.desc())
             .limit(limit)
             .offset(offset)

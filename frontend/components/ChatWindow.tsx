@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LayoutGrid, Trash2, Send, Bug, HelpCircle, Wind, NotebookPen } from "lucide-react";
-import { postChat, deleteSession,getMySession } from "@/lib/api";
+import { postChat, deleteSession, getMySession, getCurrentSession } from "@/lib/api";
 import { getSessionId, setSessionId, clearSessionId } from "@/lib/session";
 import type { Turn } from "@/lib/types";
 import Message from "./Message";
@@ -60,12 +60,43 @@ export default function ChatWindow() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [transparencyTurnId, setTransparencyTurnId] = useState<string | null>(null);
-  const { user, isAuthenticated, logout, updateProfile } = useAuth();
+  const { user, isAuthenticated, loading: authLoading, logout, updateProfile } = useAuth();
 
+  // Hangi sohbetin içinde olduğumuzu kim biliyor?
+  //
+  // Girişli kullanıcıda sunucu biliyor. Cihazdaki kimlik tarayıcı verisi
+  // silinince kayboluyor, başka cihazda hiç olmuyor ve daha kötüsü —
+  // aynı tarayıcıda önceki hesaptan kalmış olabiliyor. O yüzden girişte
+  // yereldeki değere hiç bakmıyoruz.
+  //
+  // Üyeliksiz kullanımda sunucuda kimlik yok; tek kaynak tarayıcı.
+  const resumed = useRef(false);
   useEffect(() => {
-    const saved = getSessionId();
-    if (saved) setSid(saved);
-  }, []);
+    if (authLoading || resumed.current) return;
+    resumed.current = true;
+
+    if (!isAuthenticated) {
+      const saved = getSessionId();
+      if (saved) setSid(saved);
+      return;
+    }
+
+    void (async () => {
+      try {
+        const cur = await getCurrentSession();
+        if (cur.session_id) {
+          await openSession(cur.session_id);
+        } else {
+          // Açık sohbet yok: yeni bir tane ilk mesajla açılacak.
+          clearSessionId();
+          setSid("");
+        }
+      } catch {
+        // Sunucuya ulaşılamadı — sohbet yine de kurulabilsin.
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, isAuthenticated]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -179,7 +210,7 @@ export default function ChatWindow() {
     );
     textareaRef.current?.focus();
   };
-    const openSession = async (id: string) => {
+  const openSession = async (id: string) => {
     setHistoryOpen(false);
     setError(null);
     setPending(true);

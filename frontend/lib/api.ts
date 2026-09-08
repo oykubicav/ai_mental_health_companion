@@ -24,6 +24,7 @@ import type {
   ExerciseEntry,
   JournalEntry,
   JournalUpsert,
+  CurrentSession,
 } from "./types";
 import { getAccessToken, setAccessToken, clearAccessToken } from "./auth";
 
@@ -320,6 +321,10 @@ export async function postResendVerify(email: string): Promise<{ status: string 
 
 }
 // Sohbet geçmişi — sadece kayıtlı kullanıcı
+
+export async function getCurrentSession(): Promise<CurrentSession> {
+  return fetchJson<CurrentSession>("/auth/sessions/current");
+}
 
 export async function listMySessions(
   params: { limit?: number; offset?: number } = {}

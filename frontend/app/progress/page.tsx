@@ -28,12 +28,13 @@ export default function ProgressPage() {
     setSessionId(getSessionId());
   }, []);
 
-  // Ölçüm bir oturuma yazılıyor ama ölçüm yapmak için sohbet etmiş olmak
-  // gerekmiyor: cihazda oturum yoksa burada açılıyor. Eskiden oturumu
-  // olmayan kullanıcıda düğme hiçbir şey yapmıyordu.
+  // Girişli kullanıcı ölçümü hesabına yapıyor; oturum gerekmiyor.
+  // Üyeliksiz kullanımda kaydın tutunacağı bir yer lazım: cihazda oturum
+  // yoksa burada açılıyor. Eskiden oturumu olmayan kullanıcıda düğme
+  // hiçbir şey yapmıyordu.
   async function olcumeBasla() {
     if (starting) return;
-    if (sessionId) {
+    if (isAuthenticated || sessionId) {
       setShowModal(true);
       return;
     }
@@ -179,9 +180,9 @@ export default function ProgressPage() {
         </p>
       </main>
 
-      {showModal && sessionId && (
+      {showModal && (isAuthenticated || sessionId) && (
         <AssessmentModal
-          sessionId={sessionId}
+          sessionId={isAuthenticated ? null : sessionId}
           kind={activeKind}
           onClose={() => setShowModal(false)}
           onSubmit={() => setRefreshKey((k) => k + 1)}

@@ -11,9 +11,8 @@ import type { AssessmentKind, AssessmentSubmitResponse } from "@/lib/types";
 import { AlertTriangle, X, ChevronRight } from "lucide-react";
 
 interface Props {
-  // Ölçüm bir oturuma yazılıyor. Sayfa gerekirse çağırmadan önce
-  // oturum açıyor; burada boş gelmez.
-  sessionId: string;
+  // Üyeliksiz kullanımda oturum kimliği; girişli kullanıcıda null.
+  sessionId: string | null;
   kind: AssessmentKind;
   onClose: () => void;
   onSubmit?: (resp: AssessmentSubmitResponse) => void;
@@ -50,7 +49,7 @@ export default function AssessmentModal({ sessionId, kind, onClose, onSubmit }: 
     setError("");
     try{
         const response = await submitAssessment({
-            session_id:sessionId,
+            session_id: sessionId || undefined,
             kind:kind,
             answers: answers as number[],
         });

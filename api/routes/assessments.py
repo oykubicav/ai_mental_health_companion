@@ -35,7 +35,9 @@ _CRISIS_MESSAGE_TR = (
 
 # Schemas
 class AssessmentSubmitRequest(BaseModel):
-    session_id: str
+    # Yalnızca üyeliksiz kullanımda gerekli. Giriş yapılmışsa ölçüm
+    # doğrudan hesaba yazılıyor, oturum açılmıyor.
+    session_id: Optional[str] = None
     kind: str = Field(..., pattern="^(phq9|gad7)$")
     answers: List[int]
     notes: Optional[str] = None
@@ -96,23 +98,35 @@ async def submit_assessment(
 ):
     """Ölçümü kaydeder.
 
-    Giriş yapılmışsa kayıt kullanıcıya da bağlanır. Bağlanmazsa ölçüm
-    yalnızca o oturumda görünür; kullanıcı yeni bir sohbet açtığında
-    grafiği sıfırdan başlar — takip fikrinin tamamı buna dayandığı için
-    user_id burada mutlaka yazılmalı.
+    Giriş yapılmışsa kayıt hesaba yazılır ve oturum gerekmez; takip
+    fikrinin tamamı buna dayanıyor — oturuma bağlansaydı kullanıcı yeni
+    bir sohbet açtığında grafiği sıfırdan başlardı.
+
+    Üyeliksiz kullanımda oturum kimliği zorunlu: kaydı sonradan bulmanın
+    başka yolu yok.
     """
-    try:
-        session_uuid = uuid.UUID(req.session_id)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="invalid session_id")
     try:
         scored = score(req.kind, req.answers)  # type: ignore[arg-type]
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
-    store.ensure(req.session_id)
-    if user is not None:
-        store.attach_user(req.session_id, user.id)
+    session_uuid = None
+    if user is None:
+        if not req.session_id:
+            raise HTTPException(status_code=400, detail="session_id gerekli")
+        try:
+            session_uuid = uuid.UUID(req.session_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="invalid session_id")
+        store.ensure(req.session_id)
+    elif req.session_id:
+        # Sohbetin içinden geldiyse bağı koru; yoksa oturum açma.
+        try:
+            session_uuid = uuid.UUID(req.session_id)
+            store.ensure(req.session_id)
+            store.attach_user(req.session_id, user.id)
+        except ValueError:
+            session_uuid = None
 
     session_local = store._SessionLocal()
     with session_local() as db, db.begin():

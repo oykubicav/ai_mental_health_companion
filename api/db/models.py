@@ -318,8 +318,12 @@ class Assessment(Base):
     __tablename__ = "assessments"
 
     id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=_uuid)
-    session_id: Mapped[uuid.UUID] = mapped_column(
-        GUID(), ForeignKey("sessions.id", ondelete="CASCADE"), nullable=False,
+    # Ölçüm sohbetten bağımsız bir eylem: hesabı olan kullanıcı hiç
+    # konuşmadan da yapabilir. Zorunlu tutulduğunda sırf bu satırın
+    # tutunacağı yer olsun diye boş sohbetler açılıyordu ve bunlar
+    # "Sohbetlerim" listesinde 0 mesajlı kayıtlar olarak görünüyordu.
+    session_id: Mapped[uuid.UUID | None] = mapped_column(
+        GUID(), ForeignKey("sessions.id", ondelete="CASCADE"), nullable=True,
     )
     user_id: Mapped[uuid.UUID | None] = mapped_column(
         GUID(), ForeignKey("users.id", ondelete="CASCADE"), nullable=True,

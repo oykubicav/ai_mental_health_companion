@@ -59,6 +59,11 @@ def _as_utc(dt: datetime) -> datetime:
     return dt if dt.tzinfo is not None else dt.replace(tzinfo=timezone.utc)
 
 
+# İki mesaj arasında bu kadar boşluk varsa yeni bir "oturuş" başlamış
+# sayılıyor: seans yayı sıfırlanır, kullanıcı yeni bir sohbete girer.
+SITTING_GAP_SECONDS = 6 * 3600
+
+
 class DbSessionStore:
     """Postgres/SQLite-backed session store."""
 
@@ -213,7 +218,7 @@ class DbSessionStore:
                 for r in rows
             ]
     
-    def sitting_turn_count(self, session_id: str, gap_seconds: int = 21600) -> int:
+    def sitting_turn_count(self, session_id: str, gap_seconds: int = SITTING_GAP_SECONDS) -> int:
         try:
             sid_uuid = uuid.UUID(session_id)
         except (ValueError, TypeError):

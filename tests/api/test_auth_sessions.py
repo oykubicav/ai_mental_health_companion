@@ -149,3 +149,92 @@ def test_ordering_newest_first(client, auth):
 
 def test_bad_uuid_returns_404(client, auth):
     assert client.get("/auth/sessions/not-a-uuid", headers=auth["headers"]).status_code == 404
+
+
+def test_empty_sessions_are_hidden(client, auth):
+    """Mesajsız oturum "Sohbetlerim"de görünmemeli.
+
+    Ölçüm gibi yan işlemler için açılmış boş sohbetler, kullanıcıya hiç
+    yapmadığı bir konuşma olarak görünüyordu.
+    """
+    from api.session import get_store
+    store = get_store()
+
+    bos = store.new_session()
+    store.attach_user(bos, auth["uid"])
+
+    dolu = store.new_session()
+    store.attach_user(dolu, auth["uid"])
+    store.append_turn(dolu, "merhaba", "Hoş geldin.", "cbt_support", "unknown")
+
+    body = client.get("/auth/sessions", headers=auth["headers"]).json()
+    assert body["total"] == 1
+    assert [s["session_id"] for s in body["sessions"]] == [dolu]
+
+
+def test_current_session_none_when_no_chats(client, auth):
+    body = client.get("/auth/sessions/current", headers=auth["headers"]).json()
+    assert body["session_id"] is None
+
+
+def test_current_session_requires_auth(client):
+    assert client.get("/auth/sessions/current").status_code == 401
+
+
+def test_current_session_returns_latest_active(client, auth):
+    """Cihazda oturum kimliği olmasa da sunucu devam edilecek sohbeti bilir."""
+    from api.session import get_store
+    store = get_store()
+
+    from datetime import datetime, timedelta, timezone
+    from api import db as _db
+    from api.db.models import Turn
+
+    eski = store.new_session()
+    store.attach_user(eski, auth["uid"])
+    store.append_turn(eski, "ilk", "cevap", "cbt_support", "unknown")
+
+    # Damgalar saniye çözünürlüğünde; iki sohbeti açıkça ayır.
+    with _db.get_sessionmaker()() as s, s.begin():
+        for t in s.query(Turn).all():
+            t.ts = datetime.now(timezone.utc) - timedelta(minutes=30)
+
+    yeni = store.new_session()
+    store.attach_user(yeni, auth["uid"])
+    store.append_turn(yeni, "ikinci", "cevap", "cbt_support", "unknown")
+
+    body = client.get("/auth/sessions/current", headers=auth["headers"]).json()
+    assert body["session_id"] == yeni
+    assert body["turn_count"] == 1
+
+
+def test_current_session_closes_after_sitting_gap(client, auth):
+    """Son mesajın üzerinden bir oturuş boşluğu geçtiyse sohbet kapanmıştır."""
+    from datetime import datetime, timedelta, timezone
+    from api import db as _db
+    from api.db.models import Turn
+    from api.session import get_store, SITTING_GAP_SECONDS
+
+    store = get_store()
+    sid = store.new_session()
+    store.attach_user(sid, auth["uid"])
+    store.append_turn(sid, "dün", "cevap", "cbt_support", "unknown")
+
+    eski_zaman = datetime.now(timezone.utc) - timedelta(seconds=SITTING_GAP_SECONDS + 60)
+    with _db.get_sessionmaker()() as s, s.begin():
+        for t in s.query(Turn).all():
+            t.ts = eski_zaman
+
+    body = client.get("/auth/sessions/current", headers=auth["headers"]).json()
+    assert body["session_id"] is None
+
+
+def test_current_session_ignores_other_users(client, auth):
+    other = _make_user(f"x{uuid.uuid4().hex[:8]}@test.com")
+    from api.session import get_store
+    store = get_store()
+    sid = store.new_session()
+    store.attach_user(sid, other)
+    store.append_turn(sid, "başkası", "cevap", "cbt_support", "unknown")
+
+    assert client.get("/auth/sessions/current", headers=auth["headers"]).json()["session_id"] is None

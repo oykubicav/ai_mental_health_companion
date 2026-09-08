@@ -127,7 +127,9 @@ export interface Assessment {
 }
 
 export interface AssessmentSubmit {
-  session_id: string;
+  // Yalnızca üyeliksiz kullanımda gönderilir; girişli kullanıcıda ölçüm
+  // doğrudan hesaba yazılıyor ve oturum açılmıyor.
+  session_id?: string;
   kind: AssessmentKind;
   answers: number[];   // PHQ-9: 9 madde, GAD-7: 7 madde. Her biri 0-3.
   notes?: string;
@@ -255,6 +257,12 @@ export interface InsightsResponse {
   session_count: number;
   first_session_at: string | null;
   milestones: Milestone[];
+}
+
+export interface CurrentSession {
+  session_id: string | null;
+  last_active: string | null;
+  turn_count: number;
 }
 
 export interface DeviceView {
