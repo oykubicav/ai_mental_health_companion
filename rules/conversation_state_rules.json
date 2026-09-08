@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "review_status": "needs_review",
+  "notes": "Konuşma durumu için deterministik kural katmanı. Güvenlik sınıflandırıcısıyla aynı desen: yüksek maliyetli durumlarda kural LLM'in önünde. Kural eşleşmezse LLM'in kararı geçerli. Desenler Türkçe dilbilgisel işaretlere dayanıyor (teyit sorusu, deneme+olumsuzluk, tekrar belirteci), tek tek cümlelere değil.",
+  "rules": [
+    {
+      "state": "reassurance_seeking",
+      "why": "Teyit sorusu. Kaçırılırsa güvence verilir ve kaygı döngüsü beslenir.",
+      "any": [
+        "değil mi",
+        "degil mi",
+        "\\bdi mi\\b",
+        "\\bdimi\\b",
+        "emin misin",
+        "eminmisin",
+        "sence (ciddi|kötü|tehlikeli|normal)",
+        "(geçer|geçecek|düzelir|düzelecek|iyileşir) mi",
+        "(ciddi|tehlikeli|kötü|kalıcı) (bir şey )?mi",
+        "normal mi"
+      ],
+      "not": [
+        "diye (düşün|sor|merak)",
+        "değil mi diye"
+      ]
+    },
+    {
+      "state": "technique_failed",
+      "why": "Deneme + olumsuz sonuç. Kaçırılırsa başarısızlık kullanıcıya yüklenir.",
+      "all": [
+        "\\b(denedim|denedik|denemiştim|uyguladım|yaptım|çalıştım|kullandım|doldurdum|çıktım|denemeye)\\b",
+        "(olmadı|yaramadı|işe yaramı|değişmedi|fayda etmedi|hiçbir şey olmadı|yine aynı|daha da kötü|beter|sonuç vermedi|yarıda)"
+      ],
+      "not": [
+        "\\bbence\\b",
+        "bu tür",
+        "bu tarz"
+      ]
+    },
+    {
+      "state": "ruminating",
+      "why": "Tekrar belirteci. Kaçırılırsa keşif sorusu döngüyü besler.",
+      "any": [
+        "dönüp dolaş",
+        "aynı (şeyi|soruyu|sahneyi|noktayı) (düşün|çevir|kur|sor|yaşı)",
+        "(sürekli|hep|tekrar tekrar|defalarca) (aynı şeyi )?(düşünüyorum|çeviriyorum|kuruyorum|sorguluyorum)",
+        "(neden|niye) (hep )?(ben|bana)\\b",
+        "(niye|neden) böyle oldu",
+        "(düşünmeyi|aklımdan çıkarmayı) (durduramıyorum|bırakamıyorum)",
+        "keşke .*(yapmasa|demese|etmese|olmasa)",
+        "kafamda .{0,30}(çevir|kur|oynat|dönü)"
+      ]
+    },
+    {
+      "state": "misunderstood",
+      "why": "Açık itiraz. Kaçırılırsa savunmaya geçilir.",
+      "any": [
+        "alakası yok",
+        "onu demedim",
+        "öyle demedim",
+        "yanlış anla",
+        "beni anlamadın",
+        "dediğim o değil",
+        "demek istediğim o değil",
+        "dinlemiyorsun",
+        "(cevap|söylediğin|bu).{0,25}ilgili değil"
+      ]
+    }
+  ]
+}

@@ -28,6 +28,7 @@ from typing import Optional, List
 
 from . import config
 from . import llm_adapter
+from . import state_rules
 from .types import SafetyDecision, IntentDecision
 
 
@@ -353,6 +354,9 @@ def classify(
 ) -> IntentDecision:
     """Return an IntentDecision for the user message.
 
+    Konuşma durumu için kural katmanı burada devreye giriyor: LLM
+    çağrılmasa da, JSON bozuk gelse de deterministik karar duruyor.
+
     If safety already produced a hard-stop (allow_cbt=False), we skip the
     LLM call and return an intent tied to the safety route.
     """
@@ -375,7 +379,7 @@ def classify(
             rationale="llm disabled",
         )
         intent.subintent = "unknown"  # type: ignore[attr-defined]
-        intent.conversation_state = "neutral"  # type: ignore[attr-defined]
+        intent.conversation_state = state_rules.match(user_message) or "neutral"  # type: ignore[attr-defined]
         return intent
 
     # 2. LLM classify
@@ -396,7 +400,7 @@ def classify(
             rationale=f"llm error: {type(e).__name__}",
         )
         intent.subintent = "unknown"  # type: ignore[attr-defined]
-        intent.conversation_state = "neutral"  # type: ignore[attr-defined]
+        intent.conversation_state = state_rules.match(user_message) or "neutral"  # type: ignore[attr-defined]
         return intent
 
     m = re.search(r"\{.*\}", resp.text, flags=re.DOTALL)
@@ -408,7 +412,7 @@ def classify(
             rationale="llm returned no json",
         )
         intent.subintent = "unknown"  # type: ignore[attr-defined]
-        intent.conversation_state = "neutral"  # type: ignore[attr-defined]
+        intent.conversation_state = state_rules.match(user_message) or "neutral"  # type: ignore[attr-defined]
         return intent
     try:
         data = json.loads(m.group(0))
@@ -420,7 +424,7 @@ def classify(
             rationale="json parse error",
         )
         intent.subintent = "unknown"  # type: ignore[attr-defined]
-        intent.conversation_state = "neutral"  # type: ignore[attr-defined]
+        intent.conversation_state = state_rules.match(user_message) or "neutral"  # type: ignore[attr-defined]
         return intent
 
     primary = str(data.get("primary_module", "unknown")).strip()
@@ -434,6 +438,14 @@ def classify(
     conv_state = str(data.get("conversation_state", "neutral")).strip()
     if conv_state not in CONVERSATION_STATES:
         conv_state = "neutral"
+
+    # Kural katmanı LLM'in önünde. Güvenlik sınıflandırıcısıyla aynı
+    # gerekçe: bu durumları kaçırmanın maliyeti asimetrik ve Türkçede
+    # belirleyici dilbilgisel işaretleri var. Ölçümde LLM üç koşunun
+    # üçünde de bunlarda düşük kaldı.
+    kural = state_rules.match(user_message)
+    if kural is not None:
+        conv_state = kural
     try:
         confidence = float(data.get("confidence", 0.0))
     except Exception:

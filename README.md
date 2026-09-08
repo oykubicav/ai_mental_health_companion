@@ -234,26 +234,42 @@ Kept honest, in priority order:
 3. **Migrations never run against PostgreSQL in CI.** Tests use SQLite and skip
    Alembic entirely. This has already caused one production failure (a `CHAR(36)`
    foreign key that SQLite accepted and PostgreSQL rejected).
-4. **The conversation-state classifier sits at 84%, and the remaining errors are
-   uneven.** Process cards are retrieved by a `conversation_state` label. Measured
-   over `evals/process_state_test_set.jsonl` (87 labelled Turkish cases, 17 states):
+4. **The conversation-state layer took three measured runs to get right.** Process
+   cards are retrieved by a `conversation_state` label, measured over
+   `evals/process_state_test_set.jsonl` (87 labelled Turkish cases, 17 states):
 
-   | run | accuracy | what changed |
-   |---|---|---|
-   | first | 48/87 (55%) | baseline |
-   | second | 73/87 (84%) | few-shot examples fixed |
+   | run | accuracy | high-cost errors | what changed |
+   |---|---|---|---|
+   | 1 | 55% | 6 | baseline |
+   | 2 | 84% | 6 | few-shot examples fixed |
+   | 3 | 78% | 8 | two definitions narrowed |
+   | 4 | 87% | **0** | deterministic rule layer added |
 
-   The first run's failure was not ambiguity. The field had been added to the output
-   schema but to none of the 41 few-shot examples, so the model omitted it and the
-   parser defaulted to `neutral` — four states scored 0/5 and 25 of 39 errors were
-   that single bug. The measurement also falsified the hypothesis that drove it:
-   the label set was not too large.
+   Run 1's failure was a bug, not ambiguity: the field was in the output schema but
+   in none of the 41 few-shot examples, so the model omitted it and the parser
+   defaulted to `neutral` — four states scored 0/5. The measurement also falsified
+   the hypothesis that motivated it (the label set was not too large).
 
-   Raw accuracy hides what matters, so the runner grades errors by behavioural cost.
-   Of the 14 remaining: 6 high (the wrong move — e.g. missing `reassurance_seeking`
-   means giving reassurance, which maintains the anxiety cycle), 6 medium, 2 low
-   (adjacent cards that produce a similar move). Two definitions still over-absorb
-   (`vague`, `withdrawn`) and have since been narrowed, unmeasured.
+   Runs 2→3 moved by 5 cases on n=87, which is inside run-to-run LLM variance —
+   single runs cannot distinguish a regression from noise, and treating them as
+   signal was a mistake. What *was* stable across all three: `technique_failed`,
+   `ruminating` and `reassurance_seeking` stayed low, and those are the states where
+   being wrong is clinically costly (missing reassurance-seeking means giving
+   reassurance, which maintains the anxiety cycle).
+
+   Those three have decisive Turkish lexical signatures — tag questions, attempt +
+   negated outcome, repetition markers — so the fix was to stop asking the model.
+   A deterministic rule layer now runs ahead of the LLM for them, mirroring the
+   safety classifier's design: rules first, model as fallback. Run 4 is the previous
+   run's raw output with rules applied; the rule-covered states are deterministic, so
+   those figures are exact and will not drift. High-cost errors went to zero and the
+   remaining 11 are all medium or low cost.
+
+   Rules are held to a stricter bar than the model, because a rule *overrides*:
+   zero false positives on the eval set, plus a held-out set written after the rules
+   (14/14). Two real false positives were caught building it — `hep aynı` firing on
+   pattern-noticing rather than rumination, and the noun `uygulamalar` matching the
+   verb `uyguladım` — both now regression-tested.
 
 5. No data export (deletion exists, portability doesn't), no email change, no error
    monitoring, no mobile client.
