@@ -240,25 +240,26 @@ export async function submitAssessment(
     body: JSON.stringify(req),
   });
 }
+// session_id yalnızca üyeliksiz kullanımda gerekiyor: giriş yapılmışsa
+// sunucu ölçümleri hesaba göre topluyor, oturumdan bağımsız.
 export async function getLatestAssessment(
-  sessionId: string,
+  sessionId: string | null,
   kind?: "phq9" | "gad7"
 ): Promise<Assessment | null> {
-  const params = new URLSearchParams({ session_id: sessionId });
+  const params = new URLSearchParams();
+  if (sessionId) params.set("session_id", sessionId);
   if (kind) params.set("kind", kind);
   return fetchJson<Assessment | null>(`/assessments/latest?${params}`);
 }
 
 
 export async function listAssessments(
-  sessionId: string,
+  sessionId: string | null,
   kind?: "phq9" | "gad7",
   limit = 20
 ): Promise<Assessment[]> {
-  const params = new URLSearchParams({
-    session_id: sessionId,
-    limit: String(limit),
-  });
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (sessionId) params.set("session_id", sessionId);
   if (kind) params.set("kind", kind);
   return fetchJson<Assessment[]>(`/assessments?${params}`);
 }

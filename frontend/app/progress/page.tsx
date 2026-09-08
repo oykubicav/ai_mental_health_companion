@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Plus } from "lucide-react";
-import { getSessionId } from "@/lib/session";
-import { hasConsent } from "@/lib/consent";
+import { getSessionId, setSessionId as saveSessionId } from "@/lib/session";
+import { hasConsent, POLICY_VERSION } from "@/lib/consent";
+import { postConsent } from "@/lib/api";
 import ConsentModal from "@/components/ConsentModal";
 import AssessmentTrend from "@/components/AssessmentTrend";
 import AssessmentModal from "@/components/AssessmentModal";
@@ -20,22 +21,44 @@ export default function ProgressPage() {
   const [activeKind, setActiveKind] = useState<AssessmentKind>("phq9");
   const [showModal, setShowModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const sid = getSessionId();
-    if (sid) {
-      setSessionId(sid);
-    } else if (!hasConsent()) {
-      // Ölçüm yapmak için sohbet şart değil, ama kayıt tutabilmek için
-      // önce onay + oturum gerekiyor.
-      setNeedsConsent(true);
-    }
+    setSessionId(getSessionId());
   }, []);
+
+  // Ölçüm bir oturuma yazılıyor ama ölçüm yapmak için sohbet etmiş olmak
+  // gerekmiyor: cihazda oturum yoksa burada açılıyor. Eskiden oturumu
+  // olmayan kullanıcıda düğme hiçbir şey yapmıyordu.
+  async function olcumeBasla() {
+    if (starting) return;
+    if (sessionId) {
+      setShowModal(true);
+      return;
+    }
+    if (!hasConsent()) {
+      setNeedsConsent(true);
+      return;
+    }
+    setStarting(true);
+    try {
+      const res = await postConsent(POLICY_VERSION);
+      saveSessionId(res.session_id);
+      setSessionId(res.session_id);
+      setShowModal(true);
+    } catch {
+      // Oturum açılamadı; onay ekranına düşür, oradan tekrar denenebilir.
+      setNeedsConsent(true);
+    } finally {
+      setStarting(false);
+    }
+  }
 
   function handleConsentGranted() {
     setNeedsConsent(false);
     setSessionId(getSessionId());
+    setShowModal(true);
   }
 
   if (!mounted) return null;
@@ -59,11 +82,12 @@ export default function ProgressPage() {
             Gelişimim
           </span>
           <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-1 text-[13px] font-medium text-cbt-text dark:text-cbt-dark-text hover:opacity-70 transition-opacity"
+            onClick={olcumeBasla}
+            disabled={starting}
+            className="flex items-center gap-1 text-[13px] font-medium text-cbt-text dark:text-cbt-dark-text hover:opacity-70 disabled:opacity-50 transition-opacity"
           >
             <Plus size={15} strokeWidth={2} />
-            Yeni ölçüm
+            {starting ? "Açılıyor…" : "Yeni ölçüm"}
           </button>
         </div>
       </header>
@@ -85,10 +109,10 @@ export default function ProgressPage() {
 
       <main className="max-w-3xl mx-auto px-6 py-8">
         <div className="bg-cbt-surface dark:bg-cbt-dark-surface rounded-2xl border border-cbt-border/60 dark:border-cbt-dark-border/60 p-7">
-          {sessionId ? (
+          {isAuthenticated || sessionId ? (
             <AssessmentTrend
               key={`${activeKind}-${refreshKey}`}
-              sessionId={sessionId}
+              sessionId={isAuthenticated ? null : sessionId}
               kind={activeKind}
             />
           ) : (
@@ -101,10 +125,11 @@ export default function ProgressPage() {
                 içindeki değişimi buradan izleyebilirsin.
               </p>
               <button
-                onClick={() => setShowModal(true)}
-                className="inline-flex items-center justify-center px-6 h-11 rounded-xl bg-cbt-text dark:bg-cbt-dark-text text-cbt-bg dark:text-cbt-dark-bg text-[14px] font-medium hover:opacity-85 transition-opacity"
+                onClick={olcumeBasla}
+                disabled={starting}
+                className="inline-flex items-center justify-center px-6 h-11 rounded-xl bg-cbt-text dark:bg-cbt-dark-text text-cbt-bg dark:text-cbt-dark-bg text-[14px] font-medium hover:opacity-85 disabled:opacity-50 transition-opacity"
               >
-                İlk ölçümünü yap
+                {starting ? "Açılıyor…" : "İlk ölçümünü yap"}
               </button>
             </div>
           )}

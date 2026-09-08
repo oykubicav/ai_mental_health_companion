@@ -11,6 +11,8 @@ import type { AssessmentKind, AssessmentSubmitResponse } from "@/lib/types";
 import { AlertTriangle, X, ChevronRight } from "lucide-react";
 
 interface Props {
+  // Ölçüm bir oturuma yazılıyor. Sayfa gerekirse çağırmadan önce
+  // oturum açıyor; burada boş gelmez.
   sessionId: string;
   kind: AssessmentKind;
   onClose: () => void;

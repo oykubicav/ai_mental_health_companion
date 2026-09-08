@@ -18,7 +18,8 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from api.db.models import Assessment
+from api.auth.dependencies import get_current_user_optional
+from api.db.models import Assessment, User
 from api.deps import session_store_dep
 from api.session import InMemorySessionStore
 from pipeline.assessments import score
@@ -66,11 +67,40 @@ def _row_to_response(row: Assessment) -> AssessmentResponse:
     )
 
 
+def _scope(db, user: Optional[User], session_id: Optional[str]):
+    """Okuma kapsamı: giriş yapmışsa hesabı, yapmamışsa oturumu.
+
+    Hesabı olan kullanıcının ölçümleri bütün oturumlarına yayılıyor;
+    oturuma göre filtrelemek grafiği her yeni sohbette sıfırlardı.
+    """
+    q = db.query(Assessment)
+    if user is not None:
+        return q.filter_by(user_id=user.id)
+
+    if not session_id:
+        raise HTTPException(status_code=400, detail="session_id gerekli")
+    try:
+        session_uuid = uuid.UUID(session_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="invalid session_id")
+    # Anonim okumada hesaba bağlanmış kayıtlar dışarıda kalır: oturum
+    # kimliği ele geçse bile giriş yapmış kullanıcının geçmişi sızmasın.
+    return q.filter_by(session_id=session_uuid, user_id=None)
+
+
 @router.post("", response_model=AssessmentSubmitResponse)
 async def submit_assessment(
     req: AssessmentSubmitRequest,
+    user: Optional[User] = Depends(get_current_user_optional),
     store: InMemorySessionStore = Depends(session_store_dep),
 ):
+    """Ölçümü kaydeder.
+
+    Giriş yapılmışsa kayıt kullanıcıya da bağlanır. Bağlanmazsa ölçüm
+    yalnızca o oturumda görünür; kullanıcı yeni bir sohbet açtığında
+    grafiği sıfırdan başlar — takip fikrinin tamamı buna dayandığı için
+    user_id burada mutlaka yazılmalı.
+    """
     try:
         session_uuid = uuid.UUID(req.session_id)
     except ValueError:
@@ -81,11 +111,14 @@ async def submit_assessment(
         raise HTTPException(status_code=422, detail=str(e))
 
     store.ensure(req.session_id)
+    if user is not None:
+        store.attach_user(req.session_id, user.id)
 
     session_local = store._SessionLocal()
     with session_local() as db, db.begin():
         row = Assessment(
             session_id=session_uuid,
+            user_id=user.id if user else None,
             kind=req.kind,
             answers=req.answers,
             total_score=scored.total_score,
@@ -114,18 +147,14 @@ async def submit_assessment(
 
 @router.get("/latest", response_model=Optional[AssessmentResponse])
 async def latest_assessment(
-    session_id: str = Query(...),
+    session_id: Optional[str] = Query(None),
     kind: Optional[str] = Query(None, pattern="^(phq9|gad7)$"),
+    user: Optional[User] = Depends(get_current_user_optional),
     store: InMemorySessionStore = Depends(session_store_dep),
 ):
-    try:
-        session_uuid = uuid.UUID(session_id)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="invalid session_id")
-
     session_local = store._SessionLocal()
     with session_local() as db:
-        q = db.query(Assessment).filter_by(session_id=session_uuid)
+        q = _scope(db, user, session_id)
         if kind is not None:
             q = q.filter_by(kind=kind)
         row = q.order_by(Assessment.taken_at.desc()).first()
@@ -137,28 +166,19 @@ async def latest_assessment(
 
 @router.get("", response_model=List[AssessmentResponse])
 async def list_assessments(
-    session_id: str,
+    session_id: Optional[str] = Query(None),
     kind: Optional[str] = Query(None, pattern="^(phq9|gad7)$"),
     limit: int = Query(20, ge=1, le=100),
+    user: Optional[User] = Depends(get_current_user_optional),
     store: InMemorySessionStore = Depends(session_store_dep),
 ):
-    try:
-        session_uuid = uuid.UUID(session_id)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="invalid session_id")
-        
     session_local = store._SessionLocal()
     with session_local() as db:
-        q = db.query(Assessment).filter_by(session_id=session_uuid)
-        
+        q = _scope(db, user, session_id)
         if kind is not None:
             q = q.filter_by(kind=kind)
-            
         rows = q.order_by(Assessment.taken_at.asc()).limit(limit).all()
-        
-        results = [_row_to_response(x) for x in rows]
-
-    return results
+        return [_row_to_response(x) for x in rows]
 
 
 

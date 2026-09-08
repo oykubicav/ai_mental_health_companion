@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { hasConsent, grantConsent } from "@/lib/consent";
+import { hasConsent, grantConsent, POLICY_VERSION } from "@/lib/consent";
 import { getSessionId, setSessionId } from "@/lib/session";
 import { postConsent } from "@/lib/api";
-
-const POLICY_VERSION = "0.2";
 
 export default function ConsentModal({
   onGranted,

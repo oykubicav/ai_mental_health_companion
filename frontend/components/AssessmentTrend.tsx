@@ -17,7 +17,9 @@ import type { Assessment, AssessmentKind } from "@/lib/types";
 import { Loader2, ArrowDown, ArrowUp, Minus } from "lucide-react";
 
 interface Props {
-  sessionId: string;
+  // Üyeliksiz kullanımda oturum kimliği; giriş yapılmışsa null
+  // gönderilir ve sunucu kayıtları hesaba göre toplar.
+  sessionId: string | null;
   kind: AssessmentKind;
 }
 

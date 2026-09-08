@@ -3,6 +3,9 @@
 
 const KEY = "cbt_consent_at";
 
+// Sunucudaki CBT_POLICY_VERSION ile aynı olmalı; uyuşmazsa /consent 400 döner.
+export const POLICY_VERSION = "0.2";
+
 export function hasConsent(): boolean {
   if (typeof window === "undefined") return true; // SSR — don't gate
   return window.localStorage.getItem(KEY) !== null;

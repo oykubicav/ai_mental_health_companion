@@ -57,12 +57,16 @@ def _clean_db(app):
     """
     from api import db as _db
     from api.db.models import (
-        Feedback, Turn, ConsentRecord, ChatSession, RefreshToken, ExerciseEntry, JournalEntry, User,
+        Feedback, Turn, Assessment, UserProfile, ConsentRecord, ChatSession,
+        RefreshToken, ExerciseEntry, JournalEntry, User,
     )
     engine = _db.get_engine()
     # SQLite'ta foreign key cascade varsayılan olarak kapalı, o yüzden
     # çocuk tablolar açıkça listeleniyor. Yeni tablo eklediğinde buraya da ekle.
-    order = [Feedback, Turn, ConsentRecord, ChatSession, RefreshToken, ExerciseEntry, JournalEntry, User]
+    order = [
+        Feedback, Turn, Assessment, UserProfile, ConsentRecord, ChatSession,
+        RefreshToken, ExerciseEntry, JournalEntry, User,
+    ]
     with engine.begin() as conn:
         for model in order:
             conn.execute(model.__table__.delete())
