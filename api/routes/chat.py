@@ -185,6 +185,11 @@ async def chat(
             "module": intent_module,
             "subintent": intent_subintent,
             "confidence": intent_conf,
+            # Süreç katmanı: konuşmanın nasıl gittiği ve o tur hangi
+            # süreç kartlarının kullanıldığı. Ayrı kolon açmak yerine
+            # burada — ikisi de sınıflandırmanın çıktısı.
+            "conversation_state": getattr(turn, "conversation_state", "neutral"),
+            "process_card_ids": list(getattr(turn, "process_card_ids", [])),
         },
         critic_json=turn.critic,
         timing_ms_json=turn.timing_ms,
@@ -235,6 +240,8 @@ async def chat(
             module=intent_module,
             subintent=intent_subintent,
             confidence=intent_conf,
+            conversation_state=getattr(turn, "conversation_state", "neutral"),
+            process_card_ids=list(getattr(turn, "process_card_ids", [])),
         ),
         retrieved_card_ids=[r.card_id for r in turn.retrieved],
         critic=CriticView(

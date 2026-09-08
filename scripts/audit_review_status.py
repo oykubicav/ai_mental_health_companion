@@ -29,6 +29,18 @@ def _cbt_hash(card: dict) -> str:
     return _h(card["title_tr"] + "\n" + card["content_tr"])
 
 
+def _process_hash(card: dict) -> str:
+    return _h(
+        card["title_tr"]
+        + "\n"
+        + card["principle_tr"]
+        + "\n"
+        + "\n".join(card.get("do_tr", []))
+        + "\n"
+        + "\n".join(card.get("avoid_tr", []))
+    )
+
+
 def _safety_hash(card: dict) -> str:
     return _h(
         card["must_do_tr"]
@@ -40,7 +52,12 @@ def _safety_hash(card: dict) -> str:
 
 
 def audit() -> tuple[list[str], list[str], int, int]:
-    """(sürüklenmiş, onaysız, toplam_cbt, toplam_safety) döner."""
+    """(sürüklenmiş, onaysız, toplam_cbt, toplam_safety) döner.
+
+    Süreç kartları burada yok: onlar henüz klinisyen incelemesinden
+    geçmedi ve yayın kapısını kırmamalılar. Durumları audit_process()
+    ile ayrıca raporlanıyor.
+    """
     suruklenmis: list[str] = []
     onaysiz: list[str] = []
 
@@ -61,6 +78,30 @@ def audit() -> tuple[list[str], list[str], int, int]:
     return suruklenmis, onaysiz, len(cbt), len(saf)
 
 
+def audit_process() -> tuple[list[str], list[str], int]:
+    """Süreç kartları — (sürüklenmiş, onaysız, toplam).
+
+    Onaysız olmak şimdilik hata değil; bu kartlar klinisyen incelemesini
+    bekliyor. Ama onaylanmış bir kart sonradan değiştiyse aynı sürüm
+    kilidi burada da geçerli.
+    """
+    yol = BASE / "cards/process_cards.jsonl"
+    if not yol.exists():
+        return [], [], 0
+
+    kartlar = [json.loads(l) for l in open(yol, encoding="utf-8") if l.strip()]
+    suruklenmis: list[str] = []
+    onaysiz: list[str] = []
+
+    for c in kartlar:
+        if c.get("review_status") != "clinician_reviewed" or not c.get("clinician_reviewed_at"):
+            onaysiz.append(c["id"])
+        elif c.get("reviewed_content_hash") != _process_hash(c):
+            suruklenmis.append(c["id"])
+
+    return suruklenmis, onaysiz, len(kartlar)
+
+
 def main() -> int:
     strict = "--strict" in sys.argv
     suruklenmis, onaysiz, n_cbt, n_saf = audit()
@@ -73,7 +114,14 @@ def main() -> int:
     for cid in onaysiz:
         print(f"  ONAYSIZ   {cid}")
 
-    sorun = bool(suruklenmis or onaysiz)
+    p_suruklenmis, p_onaysiz, n_proc = audit_process()
+    if n_proc:
+        print(f"\nSüreç kartı: {n_proc}")
+        print(f"  klinisyen incelemesi bekleyen: {len(p_onaysiz)}")
+        for cid in p_suruklenmis:
+            print(f"  DEĞİŞMİŞ  {cid}")
+
+    sorun = bool(suruklenmis or onaysiz or p_suruklenmis)
     if not sorun:
         print("\n✓ Bütün kartlar onaylı ve onaylandığı hâliyle duruyor.")
         return 0

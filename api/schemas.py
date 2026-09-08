@@ -31,6 +31,10 @@ class IntentView(BaseModel):
     module: str
     subintent: str
     confidence: float
+    # Konuşmanın nasıl gittiği ve bu turda kullanılan süreç kartları.
+    # İçerik kartlarından (retrieved_card_ids) ayrı tutuluyor.
+    conversation_state: str = "neutral"
+    process_card_ids: List[str] = Field(default_factory=list)
 
 class CriticView(BaseModel):
     passed: bool

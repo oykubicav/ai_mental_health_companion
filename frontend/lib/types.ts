@@ -27,6 +27,9 @@ export interface IntentView {
   module: string;
   subintent: string;
   confidence: number;
+  // Konuşmanın nasıl gittiği ve o turda kullanılan süreç kartları.
+  conversation_state?: string;
+  process_card_ids?: string[];
 }
 
 export interface CriticView {
@@ -159,6 +162,8 @@ export interface TransparencyView {
     module: string;
     subintent: string;
     confidence: number;
+    conversation_state?: string;
+    process_card_ids?: string[];
   } | null;
   critic: {
     passed: boolean;

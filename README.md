@@ -234,7 +234,28 @@ Kept honest, in priority order:
 3. **Migrations never run against PostgreSQL in CI.** Tests use SQLite and skip
    Alembic entirely. This has already caused one production failure (a `CHAR(36)`
    foreign key that SQLite accepted and PostgreSQL rejected).
-4. No data export (deletion exists, portability doesn't), no email change, no error
+4. **The conversation-state classifier sits at 84%, and the remaining errors are
+   uneven.** Process cards are retrieved by a `conversation_state` label. Measured
+   over `evals/process_state_test_set.jsonl` (87 labelled Turkish cases, 17 states):
+
+   | run | accuracy | what changed |
+   |---|---|---|
+   | first | 48/87 (55%) | baseline |
+   | second | 73/87 (84%) | few-shot examples fixed |
+
+   The first run's failure was not ambiguity. The field had been added to the output
+   schema but to none of the 41 few-shot examples, so the model omitted it and the
+   parser defaulted to `neutral` — four states scored 0/5 and 25 of 39 errors were
+   that single bug. The measurement also falsified the hypothesis that drove it:
+   the label set was not too large.
+
+   Raw accuracy hides what matters, so the runner grades errors by behavioural cost.
+   Of the 14 remaining: 6 high (the wrong move — e.g. missing `reassurance_seeking`
+   means giving reassurance, which maintains the anxiety cycle), 6 medium, 2 low
+   (adjacent cards that produce a similar move). Two definitions still over-absorb
+   (`vague`, `withdrawn`) and have since been narrowed, unmeasured.
+
+5. No data export (deletion exists, portability doesn't), no email change, no error
    monitoring, no mobile client.
 
 ---

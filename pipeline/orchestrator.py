@@ -81,6 +81,10 @@ class Turn:
     branch: str = ""
     model: str = ""
     provider: str = ""
+    # Konuşmanın nasıl yürütüleceğini belirleyen süreç kartları — içerik
+    # kartlarından ayrı tutuluyor, şeffaflık panelinde de ayrı gösteriliyor.
+    process_card_ids: List[str] = field(default_factory=list)
+    conversation_state: str = "neutral"
 
     def summary(self) -> str:
         lines = []
@@ -91,6 +95,9 @@ class Turn:
             sub = getattr(self.intent, "subintent", "?")
             lines.append(f"INTENT: module={self.intent.primary_module}  subintent={sub}  "
                          f"conf={self.intent.confidence:.2f}  ({self.intent.rationale})")
+        if self.process_card_ids:
+            lines.append(f"PROCESS: state={self.conversation_state} "
+                         f"cards={', '.join(self.process_card_ids)}")
         if self.retrieved:
             top = ", ".join(f"{r.card_id}({r.score:.2f})" for r in self.retrieved[:5])
             lines.append(f"RETRIEVED (top 5): {top}")
@@ -204,11 +211,14 @@ def respond(
 
     # 4. Compose (with conversation history + longitudinal profile for coherence)
     t0 = time.time()
+    conv_state = getattr(intent, "conversation_state", "neutral") if intent else "neutral"
     composed = composer.compose(
         user_message, safety, retrieved,
         intent=intent,
         history=history,
         profile_summary=profile_summary,
+        turn_count=turn_count,
+        conversation_state=conv_state,
         temperature=temperature,
     )
     t["compose_ms"] = (time.time() - t0) * 1000
@@ -264,6 +274,8 @@ def respond(
         branch=branch,
         model=composed.model,
         provider=composed.provider,
+        process_card_ids=list(composed.process_card_ids),
+        conversation_state=conv_state,
     )
 
 

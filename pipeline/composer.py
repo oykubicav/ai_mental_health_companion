@@ -28,6 +28,7 @@ from typing import List, Optional
 
 from . import config
 from . import llm_adapter
+from . import process_cards as _process
 from . import cards as _cards
 from .types import SafetyDecision, RetrievedCard
 
@@ -76,62 +77,31 @@ MUTLAK YASAKLAR (içerik):
 - Krizde gizlilik sözü verme. Krizde yalnız kalmayı önerme.
 
 YASAK CÜMLE KALIPLARI (tone):
-Bu ifadeleri ASLA kullanma. Performatif ve içi boştur — kullanıcı yakınmadıysa yakınmışsın gibi cevap verme:
-- "Bunu küçümsemiyorum."
-- "Sana çok üzüldüm."
-- "Seni anlıyorum."
-- "Duyguların çok geçerli."
-- "Ne hissettiğini tamamen anlıyorum."
-- "Merak etme."  /  "Kafana takma."  /  "Kafanda kuruyorsun."
-- "Harikasın." / "Çok güçlüsün." (kanıtsız toxic positivity)
-Ayrıca "Anladığını duyurma" için ayrı paragraf açma. Bir cümlelik teğet-doğrulama yeterli; hemen içeriğe geç.
+"Bunu küçümsemiyorum", "sana çok üzüldüm", "seni anlıyorum", "duyguların çok
+geçerli", "merak etme", "kafana takma", "harikasın" — bunları ASLA kullanma.
+Performatiftir. Anladığını duyurmak için ayrı paragraf açma; tek cümlelik
+teğet-doğrulama yeterli, hemen içeriğe geç.
 
-TEKRARDAN KAÇIN — bu en sık yaptığın hata:
-- "Bu konuşmada...", "Daha önce ... demiştin", "Şunu merak ediyorum" gibi kalıpları
-  arka arkaya kullanma. Bir kalıbı bir kez kullandıysan sonraki birkaç turda başka
-  bir giriş bul.
-- Kullanıcının cümlesini kendi kelimelerinle geri okuyup ardından soru sorma
-  döngüsüne girme ("Yani X diyorsun. Peki Y?"). Bu iki-üç turdan sonra kullanıcıya
-  konuşmanın ilerlemediği hissini verir.
-- Konuşmanın bütününü özetleyip toparlama hamlesini bir seansta en fazla bir kez yap.
-- Bir öneri verdiysen ve kullanıcı kabul ettiyse ("tamam", "yaparım", "not aldım"),
-  aynı öneriyi farklı kelimelerle TEKRAR ETME. Kabul edilen öneri kapanmıştır.
-- Bir örüntüyü ya da içgörüyü bir kez adlandırdıysan ("kaygı gitmeden önce
-  yoğunlaşıyor, gidince geçiyor" gibi), sonraki turda aynı cümleyi başka
-  kelimelerle kurma. Kullanıcı "evet, haklısın" dediyse o nokta anlaşılmıştır;
-  oradan İLERLE — ya somut bir adıma bağla, ya da konuşmanın açık kalan başka
-  bir yanına geç.
+TEKRARDAN KAÇIN:
+Bir kalıbı, bir öneriyi ya da bir kez adlandırdığın örüntüyü tekrar etme.
+Kabul edilmiş öneri kapanmıştır. Toparlama hamlesini bir seansta en fazla
+bir kez yap.
 
 SORU SORMA DENGESİ:
-- Arka arkaya en fazla iki turda soru sorabilirsin. Üçüncü turda soru sormadan
-  bir şey söyle: bir gözlem, bir çerçeve ya da somut bir öneri.
-- Tek mesajda birden fazla soru sorma.
-- Kullanıcı açıkça yön istiyorsa ("ne yapmalıyım", "ne öneriyorsun") soruyla
-  karşılık verme. Somut bir şey söyle, sonra istersen tek bir soru ekle.
-- Kullanıcı kısa ve kapalı cevaplar veriyorsa ("evet", "bilmiyorum", "emin değilim")
-  bu genelde soru yorgunluğudur. Soruyu bırak, sen bir şey söyle.
+Tek mesajda tek soru. Son iki cevabında soru sorduysan bu cevapta sorma;
+onun yerine bir gözlem, çerçeve ya da somut öneri sun. Kullanıcı açıkça yön
+istiyorsa ("ne yapmalıyım") soruyla karşılık verme.
 
 GÜVENLİK KONTROL SORUSU REDDEDİLDİYSE:
-Geçmişte bir kontrol sorusu sorduysan ("kendine zarar verme düşüncesi olabilir
-mi?" gibi) ve kullanıcı bunu reddettiyse ("hayır, öyle değil"), reddi olduğu
-gibi kabul et:
-- Israr etme, yeniden sorma, "emin misin" deme.
-- Uzun uzun özür dileme; en fazla yarım cümle ("iyi ki söyledin" yeterli).
-- Kullanıcıyı temkinli davrandığın için suçlu hissettirme.
-- Konuşmanın kontrol sorusundan ÖNCEKİ konusuna dön ve oradan devam et.
-- 112 ya da acil yönlendirmesi verme; o konu kapandı.
+Reddi olduğu gibi kabul et. Israr etme, "emin misin" deme, uzun uzun özür
+dileme. Kontrol sorusundan ÖNCEKİ konuya dön; o turda 112 ya da acil
+yönlendirmesi verme.
 
 KISA CEVAPLARI OLDUĞU GİBİ KABUL ET:
-Kullanıcı "evet", "hayır", "tamam", "olur", "yok", "bilmiyorum", "emin değilim",
-"devam" gibi kısa bir cevap verdiyse, bu senin en son sorduğun soruya verilmiş
-cevaptır. Başka bir yorumu arama.
-- "Şuna mı evet dedin?", "O soruya mı cevap veriyorsun?", "Neyi kastettin?" gibi
-  netleştirme soruları SORMA. Kullanıcıya kendini tekrar ettirmek onu aptal
-  yerine koyar ve konuşmayı bir tur geriye atar.
-- Cevabı al ve konuşmayı ilerlet. "Bilmiyorum" da geçerli bir cevaptır; üstüne
-  gitme, oradan devam et.
-- Gerçekten iki ayrı soru sorduysan ve hangisine cevap verildiği belirsizse,
-  sorma — daha olası olanı seç ve ilerle. Yanlış anladıysan kullanıcı düzeltir.
+"Evet", "bilmiyorum", "tamam" son sorduğun soruya verilmiş cevaptır.
+Netleştirme sorusu SORMA; cevabı al ve ilerlet. Hangisine cevap verildiği
+belirsizse daha olası olanı seç, yanlışsa kullanıcı düzeltir.
+
 # _COMPOSER_SYSTEM_TR içinde uygun bir yere ekle:
 
 BAĞLAM KARTLARI HAKKINDA:
@@ -172,23 +142,10 @@ göre hamle seç.
    Fark edileni sabitle ve kullanılabilir hale getir. Ne zaman işe yarayacağını,
    bir dahaki sefere nasıl hatırlanacağını konuş.
 
-KULLANICI KENDİ KANITINI ÜRETTİĞİNDE (çok önemli):
-Kullanıcı kendi deneyiminden bir kanıt sunduysa — "daha önce de oldu ve
-geçti", "aslında hep böyle düşünüyorum ama olmuyor", "bir kere denedim
-işe yaramıştı" gibi — bu bir dönüm noktasıdır. Soru sorma. O kanıtı al ve
-üstüne çalış:
-- Kanıtın ne söylediğini birlikte netleştir.
-- Kaygılı tahminle gerçekte olan arasındaki farkı göster.
-- Bunu bir sonraki sefere taşınabilir bir şeye çevir: "aklına o düşünce
-  geldiğinde, bunu hatırlayabilirsin" gibi somut bir bağ kur.
-Bu anı kaçırıp genel bir yorumla geçiştirmek, seansın en değerli kısmını
-harcamaktır.
-
-SORU SIKLIĞI — katı kural:
-Konuşma geçmişine bak. Son iki cevabında da soru sorduysan, bu cevapta soru
-SORMA. Bunun yerine bir gözlem yap, bir çerçeve sun ya da somut bir şey öner.
-Tek mesajda birden fazla soru sorma. Kullanıcı yön istiyorsa ("ne yapmalıyım")
-soruyla karşılık verme.
+KULLANICI KENDİ KANITINI ÜRETTİĞİNDE:
+Kendi deneyiminden bir kanıt sunduysa bu bir dönüm noktasıdır. Soru sorma;
+kanıtı al, kaygılı tahminle gerçekte olan arasındaki farkı göster ve bir
+sonraki sefere taşınabilir somut bir bağ kur.
 
 CEVAP UZUNLUĞU:
 Sabit bir uzunluk yok; içeriğe göre değişir. Keşif aşamasında iki-üç cümle
@@ -332,6 +289,7 @@ def _build_user_prompt(
     history: Optional[List[dict]] = None,
     profile_summary: Optional[str] = None,
     turn_count: int = 0,
+    process_block: str = "",
 ) -> str:
     safety_cards_full = _cards.safety_cards_by_id()
     cbt_cards_full = _cards.cbt_cards_by_id()
@@ -449,10 +407,14 @@ def _build_user_prompt(
         )
     boundary_block = _boundary_prompt_layer(turn_count)
     stage_block = _stage_hint(turn_count, history)
+    # Süreç bloğu seans yayının hemen ardında: "neredeyiz" bilgisinden sonra
+    # "bu turda nasıl davranılır" geliyor, içerik kartlarından önce.
+    process_prefix = f"{process_block}\n\n" if process_block else ""
     prompt = (
         f"{history_block}"
         f"{profile_block}"
         f"{stage_block}"
+        f"{process_prefix}"
         f"{boundary_block}"
         f"KULLANICI MESAJI (bu turdaki):\n"
         f'"""{user_message}"""\n'
@@ -655,6 +617,9 @@ class ComposedResponse:
     branch: str          # "cbt" or "safety"
     prompt_tokens_est: int = 0
     debug_prompt: Optional[str] = None
+    # Bu turda kullanılan süreç kartlarının kimlikleri — şeffaflık paneli
+    # içerik kartlarından ayrı gösteriyor.
+    process_card_ids: List[str] = field(default_factory=list)
 
 
 def compose(
@@ -666,6 +631,7 @@ def compose(
     history: Optional[List[dict]] = None,
     profile_summary: Optional[str] = None,
     turn_count: int = 0,
+    conversation_state: Optional[str] = None,
     include_prompt_in_debug: bool = False,
     temperature: float = 0.3,
     max_tokens: int = 1024,
@@ -683,10 +649,23 @@ def compose(
     Returns ComposedResponse with the text and telemetry.
     """
     system = SYSTEM_PROMPT_TR
+
+    # Süreç kartları: konuşmanın nasıl yürütüleceği. İçerik kartlarından
+    # ayrı bir aile; konuya değil konuşma durumuna göre getiriliyor.
+    process_selected = []
+    if _process.enabled():
+        process_selected = _process.select(
+            conversation_state,
+            turn_index=turn_count,
+            allow_cbt=safety.allow_cbt,
+            blocks_exercise=getattr(safety, "blocks_exercise", False),
+        )
+
     user = _build_user_prompt(
         user_message, safety, retrieved,
         intent=intent, history=history, profile_summary=profile_summary,
         turn_count=turn_count,
+        process_block=_process.format_for_prompt(process_selected),
     )
     branch = "cbt" if safety.allow_cbt else "safety"
 
@@ -707,6 +686,7 @@ def compose(
         branch=branch,
         prompt_tokens_est=(len(system) + len(user)) // 4,  # rough
         debug_prompt=(system + "\n\n---USER---\n" + user) if include_prompt_in_debug else None,
+        process_card_ids=[c.id for c in process_selected],
     )
     
 def get_boundary_state(turn_count: int) -> str:

@@ -44,3 +44,40 @@ def test_prompt_lists_absent_features():
     """Olmayan özellikler açıkça sayılmalı ki model uydurmasın."""
     for yok in ["Bildirim", "seri", "rozet"]:
         assert yok in SYSTEM_PROMPT_TR, f"'{yok}' yokluk listesinde değil"
+
+
+# ---------------------------------------------------------------- süreç katmanı
+
+def test_safety_rules_stay_in_the_prompt():
+    """Güvenlik kuralları veri katmanına taşınmadı ve taşınmamalı.
+
+    Konuşma tekniği duruma göre seçiliyor; "tanı koyma, ilaç önerme"
+    seçilecek bir şey değil. Süreç katmanı kapatılsa bile bunlar
+    yerinde durmalı.
+    """
+    for kural in ["Tanı KOYMA", "İlaç önerme", "112"]:
+        assert kural in SYSTEM_PROMPT_TR, f"güvenlik kuralı prompt'tan düşmüş: {kural}"
+
+
+def test_behaviour_rules_are_condensed_not_duplicated():
+    """Süreç kartlarına taşınan bloklar prompt'ta özet hâlde kalmalı.
+
+    Tamamen silinseydi CBT_PROCESS_CARDS=0 ile katman kapatıldığında
+    kural da kaybolurdu; uzun hâlleriyle kalsaydı kartlarla çift olurdu.
+    Ölçüt: blok var ama kısa.
+    """
+
+    for baslik in [
+        "SORU SORMA DENGESİ",
+        "KISA CEVAPLARI OLDUĞU GİBİ KABUL ET",
+        "GÜVENLİK KONTROL SORUSU REDDEDİLDİYSE",
+    ]:
+        i = SYSTEM_PROMPT_TR.index(baslik)
+        blok = SYSTEM_PROMPT_TR[i:i + 600].split("\n\n")[0]
+        assert len(blok.split("\n")) <= 7, f"{baslik} bloğu hâlâ uzun"
+
+
+def test_question_frequency_rule_is_stated_once():
+    """Aynı kural iki başlık altında tekrarlanmamalı."""
+    assert "SORU SIKLIĞI" not in SYSTEM_PROMPT_TR
+    assert SYSTEM_PROMPT_TR.count("SORU SORMA DENGESİ") == 1

@@ -1,0 +1,87 @@
+{"test_id": "ps_vague_001", "expected_state": "vague", "user_message_tr": "ya bilmiyorum işte bi tuhaflık var son zamanlarda", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_vague_002", "expected_state": "vague", "user_message_tr": "anlatamıyorum tam olarak ne olduğunu, bi ağırlık gibi", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_vague_003", "expected_state": "vague", "user_message_tr": "kendimi iyi hissetmiyorum ama nedenini bilmiyorum", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_vague_004", "expected_state": "vague", "user_message_tr": "bir şeyler ters gidiyor gibi ama parmak basamıyorum", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_vague_005", "expected_state": "vague", "user_message_tr": "nasıl desem… normal değilim son bir aydır", "history_tr": [], "hard_case": false, "notes": "Belirsiz ama süre bilgisi var; yine de adlandıramıyor."}
+{"test_id": "ps_withdrawn_001", "expected_state": "withdrawn", "user_message_tr": "yok", "history_tr": [{"user": "iş çok yoğun", "assistant": "Bu yoğunluk ne zamandır sürüyor?"}], "hard_case": false, "notes": ""}
+{"test_id": "ps_withdrawn_002", "expected_state": "withdrawn", "user_message_tr": "bilmiyorum", "history_tr": [{"user": "uyuyamıyorum", "assistant": "Yatağa girdiğinde aklından neler geçiyor?"}], "hard_case": false, "notes": ""}
+{"test_id": "ps_withdrawn_003", "expected_state": "withdrawn", "user_message_tr": "hı hı", "history_tr": [{"user": "annemle tartıştık", "assistant": "Tartışma sonrası neler hissettin?"}], "hard_case": false, "notes": ""}
+{"test_id": "ps_withdrawn_004", "expected_state": "withdrawn", "user_message_tr": "yani", "history_tr": [{"user": "her şey aynı", "assistant": "Aynı derken?"}], "hard_case": false, "notes": ""}
+{"test_id": "ps_withdrawn_005", "expected_state": "withdrawn", "user_message_tr": "emin değilim", "history_tr": [{"user": "belki de haklısın", "assistant": "Bunu düşününce ne değişiyor?"}], "hard_case": true, "notes": "Kısa ve kapalı; ambivalent ile karışabilir."}
+{"test_id": "ps_selfcrit_001", "expected_state": "self_critical", "user_message_tr": "hiçbir şeyi doğru düzgün yapamıyorum", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_selfcrit_002", "expected_state": "self_critical", "user_message_tr": "aptal gibi hissediyorum, herkes benden daha iyi", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_selfcrit_003", "expected_state": "self_critical", "user_message_tr": "yine batırdım, benden adam olmaz", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_selfcrit_004", "expected_state": "self_critical", "user_message_tr": "bu kadar basit bir şeyi bile beceremiyorum, utanıyorum kendimden", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_selfcrit_005", "expected_state": "self_critical", "user_message_tr": "zayıf olduğum için böyleyim herhalde", "history_tr": [], "hard_case": false, "notes": "Kendine yargı + nedensellik iddiası."}
+{"test_id": "ps_ambiv_001", "expected_state": "ambivalent", "user_message_tr": "denemek istiyorum ama sanki işe yaramayacak gibi geliyor", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_ambiv_002", "expected_state": "ambivalent", "user_message_tr": "haklısın da yapamam ben onu", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_ambiv_003", "expected_state": "ambivalent", "user_message_tr": "bir yanım gitmek istiyor bir yanım hiç istemiyor", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_ambiv_004", "expected_state": "ambivalent", "user_message_tr": "yaparım da… bilmiyorum, şu an değil belki", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_ambiv_005", "expected_state": "ambivalent", "user_message_tr": "evet mantıklı ama benim durumum farklı", "history_tr": [], "hard_case": true, "notes": "Klasik 'evet ama'. skeptical ile karışabilir."}
+{"test_id": "ps_direct_001", "expected_state": "directive_request", "user_message_tr": "ne yapmalıyım sence", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_direct_002", "expected_state": "directive_request", "user_message_tr": "sen söyle, ben karar veremiyorum", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_direct_003", "expected_state": "directive_request", "user_message_tr": "bana bir yöntem ver yeter", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_direct_004", "expected_state": "directive_request", "user_message_tr": "tamam anladım da somut olarak ne yapacağım", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_direct_005", "expected_state": "directive_request", "user_message_tr": "bir liste falan verir misin, adım adım", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_ownev_001", "expected_state": "own_evidence", "user_message_tr": "aslında geçen sefer de böyle olmuştu ve birkaç günde geçmişti", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_ownev_002", "expected_state": "own_evidence", "user_message_tr": "bir kere denemiştim, o gün gerçekten daha rahattım", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_ownev_003", "expected_state": "formulating", "user_message_tr": "şimdi düşününce hep aynı saatte oluyor bu", "history_tr": [], "hard_case": false, "notes": "DÜZELTME (2026-09-08): önce own_evidence etiketlenmişti. Zamansal örüntü fark etmek karşı kanıt değil formülasyondur; ilk etiket kendi tanımımızla çelişiyordu."}
+{"test_id": "ps_ownev_004", "expected_state": "own_evidence", "user_message_tr": "geçen ay sunum yapmıştım ve kimse bir şey dememişti aslında", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_ownev_005", "expected_state": "own_evidence", "user_message_tr": "dün akşam yürüyünce daha iyiydim, farkındayım aslında", "history_tr": [], "hard_case": true, "notes": "Kanıt + kısmi içgörü; reporting_progress ile karışabilir."}
+{"test_id": "ps_failed_001", "expected_state": "technique_failed", "user_message_tr": "o nefes şeyini denedim ama hiçbir şey olmadı", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_failed_002", "expected_state": "technique_failed", "user_message_tr": "düşünce kaydını doldurdum, yine aynı hissediyorum", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_failed_003", "expected_state": "technique_failed", "user_message_tr": "yürüyüşe çıktım ama daha da kötü oldum", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_failed_004", "expected_state": "technique_failed", "user_message_tr": "bu yöntemi uyguladım, işe yaramadı bende", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_failed_005", "expected_state": "technique_failed", "user_message_tr": "denedim ama yarıda bıraktım, olmadı", "history_tr": [], "hard_case": false, "notes": "Denendi mi denenmedi mi belirsiz; kart bu ayrımı yaptırıyor."}
+{"test_id": "ps_misund_001", "expected_state": "misunderstood", "user_message_tr": "alakası yok, ben onu demedim", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_misund_002", "expected_state": "misunderstood", "user_message_tr": "beni yanlış anladın galiba", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_misund_003", "expected_state": "misunderstood", "user_message_tr": "hayır ya, dediğim o değil", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_misund_004", "expected_state": "misunderstood", "user_message_tr": "sanki beni dinlemiyorsun", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_misund_005", "expected_state": "misunderstood", "user_message_tr": "bu cevap benim durumumla ilgili değil", "history_tr": [], "hard_case": true, "notes": "skeptical ile karışabilir: burada itiraz araca değil, anlaşılmaya."}
+{"test_id": "ps_form_001", "expected_state": "formulating", "user_message_tr": "yani aslında kaçtıkça daha çok korkuyorum, öyle mi oluyor", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_form_002", "expected_state": "formulating", "user_message_tr": "şimdi fark ettim, hep işten sonra başlıyor bu", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_form_003", "expected_state": "formulating", "user_message_tr": "demek ki sorun uyku değil, uykudan önceki saatler", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_form_004", "expected_state": "formulating", "user_message_tr": "bunları arka arkaya koyunca bir düzen var gibi", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_form_005", "expected_state": "formulating", "user_message_tr": "galiba mesele annemle olan mesele değil, benim ona verdiğim tepki", "history_tr": [], "hard_case": false, "notes": "Kullanıcı kendi formülasyonunu kuruyor."}
+{"test_id": "ps_wind_001", "expected_state": "winding_down", "user_message_tr": "tamam bugünlük bu kadar yeter, sağ ol", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_wind_002", "expected_state": "winding_down", "user_message_tr": "iyi geldi konuşmak, teşekkürler", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_wind_003", "expected_state": "winding_down", "user_message_tr": "şimdilik kafam toparlandı sayılır", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_wind_004", "expected_state": "winding_down", "user_message_tr": "kapatıyorum artık, sonra devam ederiz", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_wind_005", "expected_state": "winding_down", "user_message_tr": "bu kadarı yeter bence bugün", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_reass_001", "expected_state": "reassurance_seeking", "user_message_tr": "sence ciddi bir şey değil değil mi", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_reass_002", "expected_state": "reassurance_seeking", "user_message_tr": "geçecek değil mi bu, söyler misin", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_reass_003", "expected_state": "reassurance_seeking", "user_message_tr": "yani panik atak bu, kalp krizi değil di mi", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_reass_004", "expected_state": "reassurance_seeking", "user_message_tr": "normal bir şey bu değil mi, herkeste oluyor değil mi", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_reass_005", "expected_state": "reassurance_seeking", "user_message_tr": "bir daha sorucam kusura bakma ama gerçekten iyiyim di mi", "history_tr": [], "hard_case": false, "notes": "Tekrar sorma + özür; güvence arayışının tipik işareti."}
+{"test_id": "ps_reass_006", "expected_state": "reassurance_seeking", "user_message_tr": "bu belirti tehlikeli mi", "history_tr": [], "hard_case": true, "notes": "Tıbbi soru gibi de okunabilir; kart ayrımı yaptırıyor."}
+{"test_id": "ps_overw_001", "expected_state": "overwhelmed", "user_message_tr": "işten atılmak üzereyim, annem hasta, sevgilimle de ayrıldık, nereden başlayacağımı bilmiyorum", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_overw_002", "expected_state": "overwhelmed", "user_message_tr": "her şey üst üste geldi, kafam almıyor artık", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_overw_003", "expected_state": "overwhelmed", "user_message_tr": "o kadar çok şey var ki hangisini anlatsam bilmiyorum", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_overw_004", "expected_state": "overwhelmed", "user_message_tr": "para, iş, sağlık hepsi aynı anda patladı", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_overw_005", "expected_state": "overwhelmed", "user_message_tr": "bir sürü sorun var ve hiçbirine yetişemiyorum", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_rumin_001", "expected_state": "ruminating", "user_message_tr": "ama neden ben, neden hep bana oluyor bunlar, niye anlamıyorum", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_rumin_002", "expected_state": "ruminating", "user_message_tr": "dönüp dolaşıp aynı şeye geliyorum, o gün öyle demeseydim", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_rumin_003", "expected_state": "ruminating", "user_message_tr": "kafamda sürekli aynı sahneyi oynatıyorum, durduramıyorum", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_rumin_004", "expected_state": "ruminating", "user_message_tr": "yine düşünüyorum, saatlerdir aynı şeyi çeviriyorum", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_rumin_005", "expected_state": "ruminating", "user_message_tr": "niye böyle oldu, nerede hata yaptım, hangi noktada", "history_tr": [], "hard_case": true, "notes": "Çözülemez 'neden' döngüsü; vague ile karışabilir."}
+{"test_id": "ps_skept_001", "expected_state": "skeptical", "user_message_tr": "sen zaten bir yapay zekasın, beni nasıl anlayacaksın", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_skept_002", "expected_state": "skeptical", "user_message_tr": "bunlar hep aynı klişe şeyler, işe yaramaz", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_skept_003", "expected_state": "skeptical", "user_message_tr": "bunları zaten biliyorum, terapide de aynısını söylediler", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_skept_004", "expected_state": "skeptical", "user_message_tr": "bu tür uygulamalar bir işe yaramıyor bence", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_skept_005", "expected_state": "skeptical", "user_message_tr": "internetten okuduğum şeylerden farkı ne bunun", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_prog_001", "expected_state": "reporting_progress", "user_message_tr": "bu hafta biraz daha iyiydim, denediğim şey işe yaradı galiba", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_prog_002", "expected_state": "reporting_progress", "user_message_tr": "dün akşam söylediğini yaptım ve gerçekten rahatladım", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_prog_003", "expected_state": "reporting_progress", "user_message_tr": "üç gündür daha rahat uyuyorum", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_prog_004", "expected_state": "reporting_progress", "user_message_tr": "sadece bir gün iyiydi ama sayılmaz herhalde", "history_tr": [], "hard_case": true, "notes": "İlerleme + küçümseme; self_critical ile karışabilir."}
+{"test_id": "ps_prog_005", "expected_state": "reporting_progress", "user_message_tr": "toplantıda konuşabildim, beklediğim kadar kötü geçmedi", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_ret_001", "expected_state": "returning", "user_message_tr": "uzun zamandır giriş yapmamıştım, tekrar denemek istedim", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_ret_002", "expected_state": "returning", "user_message_tr": "bir süredir yoktum, kaldığımız yerden devam edebilir miyiz", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_ret_003", "expected_state": "returning", "user_message_tr": "aylar oldu galiba en son konuştuğumuzdan", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_ret_004", "expected_state": "returning", "user_message_tr": "yine buradayım, ara vermiştim", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_ret_005", "expected_state": "returning", "user_message_tr": "geçen sefer yarıda bırakmıştım, kusura bakma", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_neut_001", "expected_state": "neutral", "user_message_tr": "panik atak nedir tam olarak", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_neut_002", "expected_state": "neutral", "user_message_tr": "uyku hijyeni ne demek", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_neut_003", "expected_state": "neutral", "user_message_tr": "kaygı neden fiziksel belirti veriyor", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_neut_004", "expected_state": "neutral", "user_message_tr": "dün akşam kardeşimle sinemaya gittik", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_neut_005", "expected_state": "neutral", "user_message_tr": "bilişsel davranışçı terapi nasıl çalışıyor", "history_tr": [], "hard_case": false, "notes": ""}
+{"test_id": "ps_neut_006", "expected_state": "neutral", "user_message_tr": "merhaba", "history_tr": [], "hard_case": false, "notes": ""}

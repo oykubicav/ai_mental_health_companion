@@ -41,6 +41,21 @@ interface Props {
     unknown: "Henüz belirsiz",
   };
 
+  // Konuşma durumu — cevabın "nasıl" yazıldığını belirleyen eksen.
+  const STATE_LABELS: Record<string, string> = {
+    vague: "Henüz belirsiz anlatım",
+    withdrawn: "Kısa cevaplar",
+    self_critical: "Kendine sert konuşma",
+    ambivalent: "Kararsızlık",
+    directive_request: "Doğrudan yön isteği",
+    own_evidence: "Kendi deneyiminden kanıt",
+    technique_failed: "Denenen şey işe yaramadı",
+    misunderstood: "Yanlış anlaşılma",
+    formulating: "Toparlama anı",
+    winding_down: "Kapanışa yaklaşma",
+    neutral: "Belirgin bir örüntü yok",
+  };
+
   const RISK_LABELS: Record<string, string> = {
     none: "Yok",
     low: "Düşük",
@@ -125,6 +140,25 @@ export default function TransparencyPanel({ turnId, onClose }: Props) {
                     </p>
                   </Section>
                 )}
+
+                {/* Konuşma yaklaşımı */}
+                {data.intent?.conversation_state &&
+                  data.intent.conversation_state !== "neutral" && (
+                    <Section title="Konuşma nasıl yürütüldü">
+                      <p className="text-cbt-textSecondary">
+                        {STATE_LABELS[data.intent.conversation_state] ||
+                          data.intent.conversation_state}
+                      </p>
+                      <p className="text-xs text-cbt-textMuted mt-1 leading-relaxed">
+                        Cevabın içeriği kadar biçimi de seçiliyor: bu turda
+                        {" "}
+                        {data.intent.process_card_ids?.length || 0} yaklaşım kartı
+                        kullanıldı. Bu kartlar Neva&apos;nın ne söyleyeceğini değil,
+                        nasıl söyleyeceğini belirliyor — henüz klinisyen
+                        incelemesinden geçmediler.
+                      </p>
+                    </Section>
+                  )}
 
                 {/* Retrieved cards */}
                 {data.retrieved_card_ids && data.retrieved_card_ids.length > 0 && (

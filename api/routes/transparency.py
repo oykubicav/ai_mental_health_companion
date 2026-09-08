@@ -29,6 +29,8 @@ class TransparencyView(BaseModel):
     boundary_state: Optional[str]
     retrieved_card_ids: Optional[list]
     safety: Optional[dict]
+    # intent bloğu conversation_state ve process_card_ids alanlarını da
+    # taşıyor — cevabın "nasıl" yazıldığını belirleyen süreç katmanı.
     intent: Optional[dict]
     critic: Optional[dict]
     timing_ms: Optional[dict]
