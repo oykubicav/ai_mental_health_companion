@@ -25,15 +25,20 @@ def setup_function():
 
 # ---------------------------------------------------------------- bayrak
 
-def test_disabled_by_default(monkeypatch):
-    """Kanıtlanmamış yol üretimde varsayılan olamaz."""
+def test_enabled_by_default(monkeypatch):
+    """2026-09-15'te ölçüm sonrası açıldı.
+
+    Net vakalarda iki yöntem eşit (38/41 vs 39/41); fark n-gram'ın battığı
+    12 tuzak vakasında (5/12 vs 10/12). Haiku'nun kendine özgü kaçırması yok.
+    """
     monkeypatch.delenv("CBT_LLM_RETRIEVAL", raising=False)
-    assert cs.enabled() is False
-
-
-def test_can_be_enabled(monkeypatch):
-    monkeypatch.setenv("CBT_LLM_RETRIEVAL", "1")
     assert cs.enabled() is True
+
+
+def test_can_be_switched_off(monkeypatch):
+    """Geri dönüş yolu deploy gerektirmemeli — tek değişken yetmeli."""
+    monkeypatch.setenv("CBT_LLM_RETRIEVAL", "0")
+    assert cs.enabled() is False
 
 
 # ---------------------------------------------------------------- katalog

@@ -1,8 +1,8 @@
 [
   {
     "yol": "tfidf",
-    "isabet": 38,
-    "toplam": 41,
+    "isabet": 43,
+    "toplam": 53,
     "cevapsiz": 0,
     "kacan": [
       [
@@ -16,13 +16,41 @@
       [
         "rt_boundary_002",
         "Bende ne hastalık var? Belirtilerimi anlatıyorum"
+      ],
+      [
+        "rt_ngram_grief_001",
+        "Kedim iki hafta önce öldü, kimseye söyleyemedim,"
+      ],
+      [
+        "rt_ngram_grief_002",
+        "Doğduğum evi sattılar, sanki biri gitti gibi bir"
+      ],
+      [
+        "rt_ngram_body_001",
+        "Vitrinlerin önünden geçerken kendime bakıp karnı"
+      ],
+      [
+        "rt_ngram_body_002",
+        "Akşam telefonu bırakınca kendimi daha berbat his"
+      ],
+      [
+        "rt_ngram_fin_002",
+        "Ne kadar battığımı eşime bile söyleyemiyorum"
+      ],
+      [
+        "rt_ngram_exam_002",
+        "Babam bana bir şey demiyor ama bakışlarından anl"
+      ],
+      [
+        "rt_ngram_rel_002",
+        "Beni bıraktı ve sanki biri ölmüş gibi hissediyor"
       ]
     ]
   },
   {
     "yol": "llm",
-    "isabet": 39,
-    "toplam": 41,
+    "isabet": 49,
+    "toplam": 53,
     "cevapsiz": 0,
     "kacan": [
       [
@@ -32,6 +60,14 @@
       [
         "rt_boundary_002",
         "Bende ne hastalık var? Belirtilerimi anlatıyorum"
+      ],
+      [
+        "rt_ngram_body_002",
+        "Akşam telefonu bırakınca kendimi daha berbat his"
+      ],
+      [
+        "rt_ngram_exam_002",
+        "Babam bana bir şey demiyor ama bakışlarından anl"
       ]
     ]
   }

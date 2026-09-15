@@ -32,6 +32,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
+from functools import lru_cache
 from typing import List, Dict, Any, Optional
 
 from . import config
@@ -111,9 +112,39 @@ _182_AS_CRISIS_PATTERN = re.compile(
 # Internal card ID leak. Card IDs look like ha_psychoed_001, pa_grounding_004,
 # ga_cycle_002, dep_actsched_004, lse_thoughtrec_004, safety_self_harm_suicide_001.
 # These must NEVER appear in user-facing responses — they're prompt metadata.
-_CARD_ID_LEAK_PATTERN = re.compile(
-    r"\b(?:ha|pa|ga|dep|lse|safety)_[a-z][a-z0-9_]{2,}\b"
-)
+def _kart_onekleri() -> List[str]:
+    """Kart kimliklerinin öneklerini kartların kendisinden türet.
+
+    Elle yazılmış liste 19 önekten yalnızca 6'sını tanıyordu (ha, pa, ga,
+    dep, lse, safety). Yani "grief_stages_004" ya da "pain_pacing_004"
+    cevaba sızsa kontrol görmezden gelirdi — modül eklendikçe liste sessizce
+    eskimiş. Veriden türetince eskiyemez.
+    """
+    from . import cards as _c
+
+    onekler = {c["id"].split("_")[0] for c in _c.all_cbt_cards()}
+    onekler |= {c["card_id"].split("_")[0] for c in _c.safety_cards_by_id().values()}
+    try:
+        from . import process_cards as _p
+
+        onekler |= {c.id.split("_")[0] for c in _p.all_cards()}
+    except Exception:
+        pass
+    # Uzun önek önce: "pain" ile "pa" çakışmasın.
+    return sorted((o for o in onekler if o), key=len, reverse=True)
+
+
+@lru_cache(maxsize=1)
+def _card_id_leak_pattern():
+    # Gövde büyük harf ve rakamla başlayabiliyor: ga_pracVShyp_005, ga_4c_008
+    # gibi iki kimlik adlandırma kuralının dışında kalmış. Sıkı desen bunları
+    # kaçırıyordu; alt çizgi şartı yanlış pozitife karşı zaten yeterli koruma,
+    # çünkü Türkçe sözcüklerde alt çizgi geçmiyor.
+    return re.compile(
+        r"\b(?:" + "|".join(re.escape(o) for o in _kart_onekleri())
+        + r")_[a-z0-9][a-z0-9_]{2,}\b",
+        re.IGNORECASE,
+    )
 
 # System-term leaks. Composer must not name internal pipeline components.
 _SYSTEM_TERM_LEAK_PATTERNS = [
@@ -288,7 +319,7 @@ def _rule_pass(response_text: str, safety: SafetyDecision) -> List[Finding]:
 
     # R11: internal card ID leak. Composer must NOT surface metadata like
     # "ga_cycle_002", "pa_grounding_004". These are prompt-internal.
-    for m in _CARD_ID_LEAK_PATTERN.finditer(txt):
+    for m in _card_id_leak_pattern().finditer(txt):
         findings.append(Finding(
             check_id="R11_card_id_leak",
             layer="rule",

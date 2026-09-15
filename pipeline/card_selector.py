@@ -45,8 +45,23 @@ MAX_SECIM = 3
 
 
 def enabled() -> bool:
-    """Varsayılan kapalı — ölçülene kadar üretimde açılmaz."""
-    return os.environ.get("CBT_LLM_RETRIEVAL", "0") == "1"
+    """Varsayılan AÇIK (2026-09-15). Ölçüldü, açıldı.
+
+    85 vakalık retrieval setinde, ilk 6 kart içinde beklenen kartın gelmesi:
+
+                      net vakalar (41)   n-gram tuzağı (12)
+        TF-IDF          38/41  %93          5/12  %42
+        Haiku           39/41  %95         10/12  %83
+
+    Kırılım başlıktan önemli: iki yöntem net mesajlarda eşit, fark tamamen
+    öngörülen kusurda toplanıyor. Haiku'nun kendine özgü kaçırması da yok —
+    dört hatası TF-IDF'in on hatasının alt kümesi.
+
+    Maliyeti mesaj başına bir Haiku çağrısı (~1.560 token girdi). Sorun
+    çıkarsa CBT_LLM_RETRIEVAL=0 ile kapanıyor ve gömme yolu aynen devreye
+    giriyor; geri dönüş için deploy gerekmiyor.
+    """
+    return os.environ.get("CBT_LLM_RETRIEVAL", "1") == "1"
 
 
 _SYSTEM_TR = """Sen bir Türkçe CBT self-help sisteminin kart seçicisisin.

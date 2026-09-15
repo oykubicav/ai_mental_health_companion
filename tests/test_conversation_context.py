@@ -159,3 +159,44 @@ def test_critique_without_history_still_works():
     """Geçmiş isteğe bağlı; verilmezse kritik eskisi gibi çalışmalı."""
     sonuc = oc.critique(UZUN, _safety(), "peki", enable_llm=False)
     assert all(f.check_id != "R12_repetition" for f in sonuc.findings)
+
+
+# ---------------------------------------------------------------- kimlik sızıntısı
+
+def test_card_id_leak_pattern_covers_every_prefix():
+    """Kart kimliği kontrolü bütün kart ailelerini tanımalı.
+
+    Elle yazılmış liste 19 önekten yalnızca 6'sını içeriyordu (ha, pa, ga,
+    dep, lse, safety). 13 modülün kimliği cevaba sızsa kontrol görmezden
+    gelirdi. Yeni modül eklendikçe liste sessizce eskiyordu; artık kart
+    verisinden türetiliyor ve eskiyemez.
+    """
+    import json as _json
+    from pathlib import Path as _P
+
+    from pipeline.output_critic import _card_id_leak_pattern
+
+    kok = _P(__file__).resolve().parent.parent
+    kimlikler = []
+    for satir in open(kok / "cards/cbt_cards.jsonl", encoding="utf-8"):
+        if satir.strip():
+            kimlikler.append(_json.loads(satir)["id"])
+    for satir in open(kok / "cards/safety_cards.jsonl", encoding="utf-8"):
+        if satir.strip():
+            kimlikler.append(_json.loads(satir)["card_id"])
+
+    desen = _card_id_leak_pattern()
+    kacan = [k for k in kimlikler if not desen.search(f"şu {k} kartına göre")]
+    assert not kacan, f"sızıntı kontrolü tanımıyor: {kacan[:8]}"
+
+
+def test_card_id_leak_pattern_does_not_flag_normal_turkish():
+    from pipeline.output_critic import _card_id_leak_pattern
+
+    desen = _card_id_leak_pattern()
+    for cumle in [
+        "Bugün biraz daha iyi geçmiş olması önemli.",
+        "Nefesini yavaşlatmayı deneyebiliriz.",
+        "Uyku düzeni ve kaygı birbirini besliyor.",
+    ]:
+        assert not desen.search(cumle), cumle

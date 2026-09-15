@@ -37,6 +37,15 @@ services:
       - key: CBT_MODEL_CRITIC
         value: claude-haiku-4-5-20251001
 
+      # ─── Kart seçimi ──────────────────────────────
+      # Kartları karakter n-gramı benzerliği yerine Haiku seçiyor.
+      # Ölçüm (85 vakalık retrieval seti): net vakalarda iki yöntem eşit
+      # (38/41 vs 39/41), fark n-gram'ın battığı tuzak vakalarında
+      # (5/12 vs 10/12). Mesaj başına bir ek Haiku çağrısı.
+      # Sorun çıkarsa dashboard'dan 0 yapmak yeterli — deploy gerekmiyor.
+      - key: CBT_LLM_RETRIEVAL
+        value: "1"
+
       # ─── Database (otomatik Postgres bağlantısı) ──
       - key: CBT_DB_URL
         fromDatabase:

@@ -298,6 +298,60 @@ Kept honest, in priority order:
    overlaps. The number to trust is the shape of the error distribution, not its
    size.
 
+5. **The card retrieval was doing less work than the classifiers around it.** Two
+   LLMs sit on either side of retrieval — one picks the topic label, one writes the
+   answer — but the step that decides *which two of 180 cards the answer is based
+   on* was TF-IDF character n-gram cosine similarity. The consequence is easiest to
+   see in one pair:
+
+   ```
+   "Kedim öldü ama kimseye söyleyemiyorum"   → pain_flareup_009   0.068
+   "kedim ödül aldı, kimseye söylemedim"     → pain_flareup_009   0.064
+   ```
+
+   Bereavement and good news retrieve the same chronic-pain card at nearly the same
+   score. The shared n-grams are `ama`, `kimseye`, `söyleyemiyorum` — grammar, not
+   content — and `öldü` contributes nothing. Turkish is agglutinative, so suffix
+   fragments like `-iyor` appear in almost every sentence; similarity is dominated
+   by morphology. Top-1 scores across 89 messages have a median of 0.093 and a
+   top-to-bottom ratio of 1.58x, meaning the sixth card is nearly as "relevant" as
+   the first. The topic filter, not the similarity score, was doing the selecting.
+
+   The existing retrieval eval scored 92.7% and did not show this, because its cases
+   are textbook vignettes where the topic word is repeated several times. Twelve
+   cases were added where the topic is carried by a single rare word and the rest is
+   filler — the shape real users actually write in. Measured against Haiku given all
+   180 card titles (~1,560 tokens):
+
+   | | original 41 | n-gram traps 12 |
+   |---|---|---|
+   | TF-IDF | 38/41 (93%) | 5/12 (42%) |
+   | Haiku | 39/41 (95%) | 10/12 (83%) |
+
+   The headline (81% → 92%) overstates it and the decomposition is the real finding:
+   the two methods are equivalent on clear messages and diverge entirely on the
+   failure mode, which is what a correct hypothesis looks like. The LLM path also has
+   no unique misses — its four errors are a subset of TF-IDF's ten. The honest caveat
+   is that the trap cases were written by someone who already knew what n-gram fails
+   at, so 83% is not a forecast; the claim is only that the gap is real and lands
+   where predicted.
+
+   It is now the default, at the cost of one extra Haiku call per message
+   (~1,560 input tokens). `card_selector` validates returned IDs against the real
+   card set and drops hallucinated ones, returns `None` on any failure so the caller
+   falls back to embeddings, and is never invoked when `allow_cbt` is false — the
+   crisis lane must not surface CBT content at all. `CBT_LLM_RETRIEVAL=0` reverts to
+   the embedding path without a deploy. Latency has not been measured yet; that is
+   the open question on this change, not accuracy.
+
+   `sentence-transformers` was evaluated as the third option and rejected: +7.7
+   points on retrieval, but `safety_recall` fell from 88.2% to 61.4% because the
+   Layer 3 thresholds are calibrated to TF-IDF's 0.05–0.20 similarity range and ST
+   produces 0.3–0.9. The two consumers are now split — retrieval follows the flag,
+   the safety classifier is pinned to TF-IDF — with a test asserting the pin cannot
+   be wired to the flag by accident. It also allocated 20 GB of GPU memory locally,
+   which rules it out on the deployment tier regardless.
+
    Rules are held to a stricter bar than the model, because a rule *overrides*:
    zero false positives on the eval set, plus a held-out set written after the rules
    (14/14). Two real false positives were caught building it — `hep aynı` firing on
