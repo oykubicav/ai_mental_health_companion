@@ -39,11 +39,18 @@ def _build_card_index():
     """
     cards = _cards.all_cbt_cards()
     texts = [c["_text"] for c in cards]
-    backend = embedding_backend.get_backend()
+    # Retriever eşik kullanmıyor, yalnızca sıralıyor — daha iyi bir gömme
+    # burada doğrudan kazanç. Güvenlik katmanı ayrı bayrağa bakıyor.
+    backend = embedding_backend.get_backend(prefer_st=config.PREFER_ST_RETRIEVAL)
     backend.fit(texts)
     matrix = backend.encode(texts)
     return backend, matrix, cards
 
+
+
+# Modelin seçtiği kart, graf kartlarının (0.65 / 0.50) üstünde ama güvenlik
+# kartının (1.0) altında. Güvenlik hiçbir koşulda geçilmez.
+_LLM_SELECTION_SCORE = 0.90
 
 
 # Public API
@@ -54,6 +61,7 @@ def retrieve(
     module_filter: Optional[set] = None,
     safety_card_ids: Optional[List[str]] = None,
     allow_cbt: bool = True,
+    preferred_ids: Optional[List[str]] = None,
 ) -> List[RetrievedCard]:
     """Return the top-K cards. Safety cards (if provided) are prepended.
 
@@ -84,6 +92,33 @@ def retrieve(
     # 1b. HARD STOP — blocked safety lanes never surface CBT content
     if not allow_cbt:
         return out
+
+    # 1c. Modelin seçtiği kartlar — varsa gömme sıralamasının önüne geçer.
+    #
+    # Gömme sıralamasının ayırt etme gücü ölçüldü ve düşük çıktı (medyan
+    # tepe skor 0.093, tepe/son oranı 1.58x). Model seçebiliyorsa onun
+    # seçimi daha bilgili. Gelmezse aşağıdaki gömme yolu aynen çalışır.
+    if preferred_ids:
+        _, _, tum_kartlar = _build_card_index()
+        by_id = {c["id"]: c for c in tum_kartlar}
+        for rank, cid in enumerate(preferred_ids):
+            c = by_id.get(cid)
+            if c is None or cid in seen_ids:
+                continue
+            if module_filter is not None and c["topic"] not in module_filter:
+                # Model konu filtresinin dışına çıktıysa ona uyuluyor:
+                # filtre intent etiketinden geliyor ve o da yanılabiliyor.
+                pass
+            out.append(RetrievedCard(
+                card_id=c["id"],
+                topic=c["topic"],
+                type=c["type"],
+                title_tr=c["title_tr"],
+                score=_LLM_SELECTION_SCORE - rank * 0.01,
+                snippet=c["content_tr"][:200],
+                source="llm",
+            ))
+            seen_ids.add(cid)
 
     # 2. Embedding retrieval
     backend, matrix, cards = _build_card_index()
@@ -127,6 +162,7 @@ def hybrid_retrieve(
     module_filter: Optional[set] = None,
     safety_card_ids: Optional[List[str]] = None,
     allow_cbt: bool = True,
+    preferred_ids: Optional[List[str]] = None,
 ) -> List[RetrievedCard]:
     """Vektör seed'leri + graf zenginleştirme.
 
@@ -151,6 +187,7 @@ def hybrid_retrieve(
         module_filter=module_filter,
         safety_card_ids=safety_card_ids,
         allow_cbt=allow_cbt,
+        preferred_ids=preferred_ids,
     )
 
     # HARD STOP: safety-only lane

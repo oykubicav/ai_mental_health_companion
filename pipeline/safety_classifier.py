@@ -80,7 +80,11 @@ def _build_anchor_index():
         for a in anchors:
             rows.append(a)
             concept_for_row.append(cid)
-    backend = embedding_backend.get_backend()
+    # TF-IDF'e SABİT — CBT_PREFER_ST bayrağını bilerek dinlemiyor.
+    # Layer 3 eşikleri TF-IDF benzerlik dağılımına göre ayarlandı; ST'ye
+    # geçirildiğinde safety_recall 88.2%'den 61.4%'e düşüyor (ölçüldü,
+    # 2026-09-09). Değiştirmeden önce config.PREFER_ST_SAFETY yorumunu oku.
+    backend = embedding_backend.get_backend(prefer_st=config.PREFER_ST_SAFETY)
     backend.fit(rows)  # for TF-IDF; no-op for ST
     matrix = backend.encode(rows)
     return backend, matrix, concept_for_row

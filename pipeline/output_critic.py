@@ -524,15 +524,80 @@ def _llm_pass(response_text: str, safety: SafetyDecision, user_message: str) -> 
 
 
 # Public API
+# Layer A2 — repetition against the conversation so far
+#
+# Prompt zaten "bir kez adlandırdığın örüntüyü tekrar etme" diyor ama kural
+# yalnızca modelin dikkatine bağlıydı; ihlal edildiğinde onu görecek hiçbir
+# şey yoktu. Kritik önceki asistan turlarını hiç almıyordu, dolayısıyla
+# tekrarı yapısal olarak fark edemezdi.
+#
+# LLM kullanmıyoruz: tekrar yüzeysel bir özellik, örtüşen kelime öbeği
+# saymak yeterli ve deterministik. Ölçüm koşudan koşuya değişmiyor.
+
+_TEKRAR_ESIK = 0.45         # önceki turla örtüşme oranı
+_TEKRAR_MIN_KELIME = 25     # kısa cevaplarda örtüşme doğal, ölçme
+_TEKRAR_GERI = 2            # kaç asistan turuna bakılıyor
+_NGRAM = 4
+
+
+def _ngramlar(metin: str, n: int = _NGRAM) -> set:
+    kelimeler = re.findall(r"\w+", metin.lower(), flags=re.UNICODE)
+    if len(kelimeler) < n:
+        return set()
+    return {tuple(kelimeler[i:i + n]) for i in range(len(kelimeler) - n + 1)}
+
+
+def _repetition_pass(
+    response_text: str,
+    history: Optional[List[Dict[str, Any]]],
+) -> List[Finding]:
+    """Yeni cevap önceki asistan turlarını tekrar ediyor mu?
+
+    Yumuşak bulgu: tekrar rahatsız edici ama tehlikeli değil, yeniden
+    yazdırmak için tek başına yeterli sayılmıyor. Sert yapmak, meşru
+    biçimde bir şeyi netleştiren cevapları da reddederdi.
+    """
+    if not history:
+        return []
+
+    yeni = _ngramlar(response_text)
+    if len(re.findall(r"\w+", response_text)) < _TEKRAR_MIN_KELIME or not yeni:
+        return []
+
+    for tur in list(history)[-_TEKRAR_GERI:]:
+        onceki = _ngramlar((tur.get("response") or ""))
+        if not onceki:
+            continue
+        ortak = len(yeni & onceki) / len(yeni)
+        if ortak >= _TEKRAR_ESIK:
+            return [Finding(
+                check_id="R12_repetition",
+                layer="rule",
+                severity="soft",
+                message=(
+                    f"Cevap önceki turla %{ortak * 100:.0f} örtüşüyor — "
+                    f"aynı şey yeniden söyleniyor."
+                ),
+            )]
+    return []
+
+
 def critique(
     response_text: str,
     safety: SafetyDecision,
     user_message: str,
     *,
+    history: Optional[List[Dict[str, Any]]] = None,
     enable_llm: bool = True,
 ) -> CritiqueResult:
-    """Run the full critique. Rule pass always runs; LLM pass if enabled."""
+    """Run the full critique. Rule pass always runs; LLM pass if enabled.
+
+    history verilirse tekrar kontrolü de çalışıyor. Bu kontrol olmadan
+    kritik, konuşmanın en görünür kusurunu yapısal olarak göremiyordu:
+    önceki turları hiç almıyordu.
+    """
     rule_findings = _rule_pass(response_text, safety)
+    rule_findings += _repetition_pass(response_text, history)
 
     llm_findings: List[Finding] = []
     llm_used = False

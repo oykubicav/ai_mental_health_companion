@@ -79,5 +79,8 @@ databases:
     databaseName: cbt
     user: cbt
     region: frankfurt
-    plan: free               # Ücretsiz — 1GB storage, 90 gün sonra silinir (re-migrate lazım)
+    plan: 0.1c-256mb         # $6/ay — 0.1 CPU, 256 MB RAM. Ücretsiz plan 30 günde
+                             # sona eriyor ve veritabanı duruyor; 2026-09-15'te oldu.
+    diskSizeGB: 15           # Basic katmanın varsayılanı. Yalnızca artırılabilir,
+                             # küçültülemez — bilerek asgaride bırakıldı.
     ipAllowList: []          # sadece Render internal — dış erişim yok (güvenli)

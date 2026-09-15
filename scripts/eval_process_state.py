@@ -69,16 +69,31 @@ def _load_cases():
         return [json.loads(l) for l in f if l.strip()]
 
 
-def _classify(case) -> str:
-    """Tek bir örneği sınıflandır ve conversation_state'i döndür."""
+def _classify(case) -> tuple[str, float]:
+    """Tek bir örneği sınıflandır: (conversation_state, confidence)."""
     from pipeline import intent_classifier, safety_classifier
 
     mesaj = case["user_message_tr"]
     # Güvenlik sınıflandırması intent'i etkiliyor (kriz yolunda kısa devre),
     # o yüzden gerçek akışın aynısını kuruyoruz.
     safety = safety_classifier.classify(mesaj, enable_layer3=False)
-    intent = intent_classifier.classify(mesaj, safety, enable_llm=True)
-    return getattr(intent, "conversation_state", "neutral")
+    intent = intent_classifier.classify(
+        mesaj, safety, history=_history(case), enable_llm=True
+    )
+    return getattr(intent, "conversation_state", "neutral"), intent.confidence
+
+
+def _history(case) -> list:
+    """Set formatındaki geçmişi orchestrator'ın kullandığı şekle çevirir.
+
+    Alan setin ilk sürümünden beri vardı ama hiçbir şey okumuyordu:
+    sınıflandırıcı geçmiş kabul etmiyordu. Şimdi okunuyor, yani bu vakalar
+    ilk kez cevaplanabilir hâlde ölçülüyor.
+    """
+    return [
+        {"user_message": t.get("user", ""), "response": t.get("assistant", "")}
+        for t in case.get("history_tr", []) or []
+    ]
 
 
 def run(limit=None, only=None):
@@ -91,10 +106,10 @@ def run(limit=None, only=None):
     sonuclar = []
     for i, c in enumerate(cases, 1):
         try:
-            uretilen = _classify(c)
+            uretilen, guven = _classify(c)
             hata = None
         except Exception as e:  # tek örnek patlarsa koşu devam etsin
-            uretilen, hata = "HATA", f"{type(e).__name__}: {e}"
+            uretilen, guven, hata = "HATA", None, f"{type(e).__name__}: {e}"
 
         dogru = uretilen == c["expected_state"]
         sonuclar.append({
@@ -102,6 +117,7 @@ def run(limit=None, only=None):
             "beklenen": c["expected_state"],
             "uretilen": uretilen,
             "dogru": dogru,
+            "guven": guven,
             "hard_case": c.get("hard_case", False),
             "mesaj": c["user_message_tr"],
             "hata": hata,
@@ -112,6 +128,51 @@ def run(limit=None, only=None):
             print()
     print("\n")
     return sonuclar
+
+
+GUVEN_BANTLARI = [(0.0, 0.55), (0.55, 0.75), (0.75, 0.90), (0.90, 1.01)]
+
+
+def _guven_kirilimi(sonuclar) -> None:
+    """İsabeti modelin kendi güvenine göre kır.
+
+    Sorulan şey şu: model emin olmadığını biliyor mu? Biliyorsa düşük güvenli
+    tahminlerde belirgin şekilde daha kötü olması gerekir ve o zaman bir eşik
+    kurmak anlamlı olur — düşük güvende belirli bir durum kartına bağlanmak
+    yerine duruş kartlarıyla yetinmek.
+
+    Bilmiyorsa (isabet bantlar arasında düz gidiyorsa) eşik hiçbir şey
+    kazandırmaz, yalnızca bilgi kaybettirir. Ölçmeden kurmamak için burada.
+
+    Uyarı: confidence modelin kendi beyanı, kalibre edilmiş bir olasılık
+    değil. Bantlar arası fark küçükse gürültüdür.
+    """
+    olcusuz = [r for r in sonuclar if r.get("guven") is None]
+    olculu = [r for r in sonuclar if r.get("guven") is not None]
+    if not olculu:
+        return
+
+    print("\nModelin kendi güvenine göre isabet:")
+    for alt, ust in GUVEN_BANTLARI:
+        bant = [r for r in olculu if alt <= r["guven"] < ust]
+        if not bant:
+            continue
+        d = sum(1 for r in bant if r["dogru"])
+        print(f"  {alt:.2f}–{ust if ust <= 1 else 1.0:.2f}  {d}/{len(bant)}  ({d/len(bant):.0%})")
+    if olcusuz:
+        print(f"  (güveni okunamayan: {len(olcusuz)})")
+
+    # Eşik kurulacaksa hangi noktada ne kaybedildiği burada görünür.
+    print("  Eşik konsaydı ne olurdu:")
+    for esik in (0.55, 0.75):
+        elenen = [r for r in olculu if r["guven"] < esik]
+        if not elenen:
+            continue
+        yanlis_elenen = sum(1 for r in elenen if not r["dogru"])
+        print(
+            f"    <{esik}: {len(elenen)} tahmin duruş kartına düşerdi, "
+            f"{yanlis_elenen} tanesi zaten yanlıştı"
+        )
 
 
 def report(sonuclar):
@@ -177,6 +238,8 @@ def report(sonuclar):
             print("  Yüksek maliyetli olanlar:")
             for r in agir:
                 print(f"    {r['test_id']}: {r['beklenen']} → {r['uretilen']}")
+
+    _guven_kirilimi(sonuclar)
 
     yanlislar = [r for r in sonuclar if not r["dogru"]]
     if yanlislar:

@@ -393,16 +393,60 @@ Mesaj: "Yeterince konuştuk sanırım, gerisini kendim düşüneyim."
 
 
 # Public API
+_HISTORY_TURNS = 3          # sınıflandırmaya giren önceki tur sayısı
+_HISTORY_REPLY_CHARS = 200  # asistan cevabından alınan baş kısım
+
+
+def _history_block(history: Optional[List[dict]]) -> str:
+    """Son birkaç turu sınıflandırıcı için kısa bir bağlam bloğuna çevirir.
+
+    Bu blok olmadan tek başına anlamı olmayan mesajlar sınıflandırılamıyordu.
+    "yani?" tek başına hiçbir modüle ait değil ve hiçbir duruma benzemiyor;
+    önceki turla birlikte bakıldığında "peki bununla ne yapacağım" oluyor.
+    Ölçümde bu mesajlar unknown ya da vague'a düşüyordu.
+
+    Asistan cevapları kırpılıyor: sınıflandırıcının ihtiyacı olan şey konunun
+    ne olduğu, cevabın tamamı değil. Kırpmasak her sınıflandırma çağrısı
+    composer kadar uzun olurdu.
+
+    Geçmiş yalnızca ipucu; kararı yine mevcut mesaj veriyor. Önceki turun
+    modülünü taşımak da mümkündü ama istemedik: erken verilmiş yanlış bir
+    modül bütün konuşmaya yapışırdı.
+    """
+    if not history:
+        return ""
+
+    satirlar = []
+    for tur in history[-_HISTORY_TURNS:]:
+        kullanici = (tur.get("user_message") or "").strip()
+        cevap = (tur.get("response") or "").strip()
+        if kullanici:
+            satirlar.append(f"Kullanıcı: {kullanici}")
+        if cevap:
+            kisa = cevap[:_HISTORY_REPLY_CHARS]
+            if len(cevap) > _HISTORY_REPLY_CHARS:
+                kisa += "…"
+            satirlar.append(f"Neva: {kisa}")
+
+    if not satirlar:
+        return ""
+    return "ÖNCEKİ TURLAR (bağlam — sınıflandırılacak mesaj bu değil):\n" + "\n".join(satirlar) + "\n\n"
+
+
 def classify(
     user_message: str,
     safety: Optional[SafetyDecision] = None,
     *,
+    history: Optional[List[dict]] = None,
     enable_llm: bool = True,
 ) -> IntentDecision:
     """Return an IntentDecision for the user message.
 
     Konuşma durumu için kural katmanı burada devreye giriyor: LLM
     çağrılmasa da, JSON bozuk gelse de deterministik karar duruyor.
+
+    history verilirse son birkaç tur bağlam olarak gönderiliyor — kısa
+    mesajlar ("yani?", "peki", "olabilir") tek başına sınıflandırılamıyor.
 
     If safety already produced a hard-stop (allow_cbt=False), we skip the
     LLM call and return an intent tied to the safety route.
@@ -433,7 +477,10 @@ def classify(
     try:
         resp = llm_adapter.llm_complete(
             system=_INTENT_SYSTEM_TR,
-            user=f"Mesaj: \"{user_message}\"\n\nSınıflandırma JSON'u:",
+            user=(
+                f"{_history_block(history)}"
+                f"Mesaj: \"{user_message}\"\n\nSınıflandırma JSON'u:"
+            ),
             model=config.LLM_MODEL_INTENT,
             max_tokens=200,
             temperature=0.0,

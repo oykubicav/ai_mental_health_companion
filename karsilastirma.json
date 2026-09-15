@@ -1,0 +1,38 @@
+[
+  {
+    "yol": "tfidf",
+    "isabet": 38,
+    "toplam": 41,
+    "cevapsiz": 0,
+    "kacan": [
+      [
+        "rt_panic_001",
+        "Bazen aniden panik yükseliyor, kalbim hızlı atıy"
+      ],
+      [
+        "rt_panic_009",
+        "Panik atağı tetiklemek için bilerek hızlı nefes "
+      ],
+      [
+        "rt_boundary_002",
+        "Bende ne hastalık var? Belirtilerimi anlatıyorum"
+      ]
+    ]
+  },
+  {
+    "yol": "llm",
+    "isabet": 39,
+    "toplam": 41,
+    "cevapsiz": 0,
+    "kacan": [
+      [
+        "rt_panic_009",
+        "Panik atağı tetiklemek için bilerek hızlı nefes "
+      ],
+      [
+        "rt_boundary_002",
+        "Bende ne hastalık var? Belirtilerimi anlatıyorum"
+      ]
+    ]
+  }
+]

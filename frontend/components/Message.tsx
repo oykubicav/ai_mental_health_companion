@@ -38,6 +38,7 @@ export default function Message({
   const exerciseLink = exerciseLinkFor(turn.chat.retrieved_card_ids, {
     allowCbt: turn.chat.safety.allow_cbt,
     blocksExercise: turn.chat.safety.blocks_exercise,
+    conversationState: turn.chat.intent?.conversation_state,
   });
 
   return (

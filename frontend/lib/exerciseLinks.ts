@@ -67,15 +67,42 @@ const CARD_TO_TOOL: Record<string, ExerciseLink> = {
 };
 
 /**
+ * Konuşma bu durumlardayken araç önerilmiyor. Retrieval bir kart getirmiş
+ * olabilir, ama kartın getirilmesi kullanıcının o araca hazır olduğu
+ * anlamına gelmiyor:
+ *
+ * - vague / withdrawn: tablo henüz netleşmedi. proc_vague_002 doğrudan
+ *   "erken teknik önerme" diyor; kullanıcı daha ne olduğunu anlatmadan
+ *   yedi soruluk bir form açmak, dinlemek yerine iş vermek demek.
+ * - overwhelmed: proc_overwhelmed_002 kapsamı daraltmayı söylüyor.
+ *   Zaten çok fazla şey taşıyana bir görev daha eklemek ters etki yapar.
+ * - technique_failed: kullanıcı az önce bunun işe yaramadığını söyledi.
+ *   Aynı aracı tekrar sunmak duyulmadığının kanıtı olur.
+ */
+const ARAC_ONERILMEYEN = new Set([
+  "vague",
+  "withdrawn",
+  "overwhelmed",
+  "technique_failed",
+]);
+
+/**
  * Bu turda önerilebilecek tek araç. Güvenlik kapısı egzersizi
  * kapattıysa (kriz, destekleyici-egzersizsiz yol) hiçbir şey dönmez —
  * o anda gereken bir form değil.
  */
 export function exerciseLinkFor(
   cardIds: string[] | undefined,
-  opts: { allowCbt: boolean; blocksExercise?: boolean }
+  opts: {
+    allowCbt: boolean;
+    blocksExercise?: boolean;
+    conversationState?: string;
+  }
 ): ExerciseLink | null {
   if (!cardIds || !opts.allowCbt || opts.blocksExercise) return null;
+  if (opts.conversationState && ARAC_ONERILMEYEN.has(opts.conversationState)) {
+    return null;
+  }
   for (const id of cardIds) {
     const tool = CARD_TO_TOOL[id];
     if (tool) return tool;

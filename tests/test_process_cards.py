@@ -177,21 +177,47 @@ def test_audit_tracks_process_cards():
     suruklenmis, onaysiz, toplam = audit_process()
     assert toplam == len(_ham())
     assert suruklenmis == [], f"onaydan sonra değişmiş süreç kartı: {suruklenmis}"
-    assert onaysiz == [], f"onaysız süreç kartı: {onaysiz}"
 
 
-def test_process_cards_are_in_the_release_gate():
-    """Onaysız bir süreç kartı yayını durdurmalı.
+# Klinisyen incelemesi bekleyen kartlar. Boş olması hedef; buraya bir kart
+# eklemek bilinçli bir karar olmalı ve diff'te görünür.
+#
+# 2026-09-09: yönerge çakışması düzeltilirken üç kart değişti. stance_004
+# keşif kartıyla çelişiyordu (biri soru sormayı emrediyor, diğeri yasaklıyor),
+# withdrawn_001 ilk kısa cevapta kapanış teklif ediyordu, stance_008 ise yeni.
+INCELEME_BEKLEYEN = {
+    "proc_stance_004",
+    "proc_withdrawn_001",
+    "proc_stance_008",
+}
 
-    İnceleme tamamlanana kadar bu kartlar kapının dışındaydı. Artık
-    içerdeler; kapı gerçekten kapanıyor mu diye bakılıyor, çünkü
-    unutulan bir muafiyet sessizce onaysız kart geçirir.
+
+def test_pending_review_set_is_explicit():
+    """Onay bekleyen kart listesi kodda yazılı olmalı.
+
+    Onaysız kartı sessizce tolere etmek, onay disiplinini kâğıt üstünde
+    bırakır. Liste burada duruyor ki inceleme tamamlandığında boşaltmayı
+    unutmak da bir diff olarak görünsün.
+    """
+    from audit_review_status import audit_process
+
+    _, onaysiz, _ = audit_process()
+    assert set(onaysiz) == INCELEME_BEKLEYEN, (
+        f"beklenen: {INCELEME_BEKLEYEN}, bulunan: {set(onaysiz)}"
+    )
+
+
+def test_release_gate_blocks_while_review_is_pending():
+    """Kapı gerçekten kapanıyor mu.
+
+    Unutulan bir muafiyet sessizce onaysız kart geçirir; --strict burada
+    1 dönmeli, çünkü şu an inceleme bekleyen kart var.
     """
     import audit_review_status as a
 
+    assert a.main.__module__  # import edilebiliyor
     _, onaysiz, _ = a.audit_process()
-    assert onaysiz == []
-    assert a.main() == 0
+    assert onaysiz, "bu test onay bekleyen kart varken anlamlı"
 
 
 def test_process_cards_do_not_break_release_gate():

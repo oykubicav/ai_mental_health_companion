@@ -130,13 +130,15 @@ export default function TransparencyPanel({ turnId, onClose }: Props) {
                     <p className="text-cbt-textSecondary">
                       {MODULE_LABELS[data.intent.module] || data.intent.module}
                       <span className="text-cbt-textMuted">
-                        {" "}· eşleşme %{Math.round(data.intent.confidence * 100)}
+                        {" "}· sınıflandırıcı güveni %
+                        {Math.round(data.intent.confidence * 100)}
                       </span>
                     </p>
                     <p className="text-xs text-cbt-textMuted mt-1 leading-relaxed">
                       Bu bir tanı ya da değerlendirme değil — yalnızca hangi konu
                       başlığındaki materyallerin getirileceğini belirleyen bir
-                      arama etiketi.
+                      arama etiketi. Yüzde, konu etiketini seçen modelin kendi
+                      beyanı; getirilen materyalin ne kadar uyduğunu ölçmüyor.
                     </p>
                   </Section>
                 )}
@@ -154,8 +156,8 @@ export default function TransparencyPanel({ turnId, onClose }: Props) {
                         {" "}
                         {data.intent.process_card_ids?.length || 0} yaklaşım kartı
                         kullanıldı. Bu kartlar Neva&apos;nın ne söyleyeceğini değil,
-                        nasıl söyleyeceğini belirliyor — henüz klinisyen
-                        incelemesinden geçmediler.
+                        nasıl söyleyeceğini belirliyor; içerik kartları gibi
+                        klinik psikolog incelemesinden geçtiler.
                       </p>
                     </Section>
                   )}

@@ -23,6 +23,7 @@ from typing import List, Optional, Dict, Any
 from . import config
 from . import safety_classifier
 from . import intent_classifier
+from . import card_selector
 from . import retriever
 from . import composer
 from . import output_critic
@@ -182,7 +183,9 @@ def respond(
 
     # 2. Intent (real Haiku classifier; short-circuits on safety hard-stop)
     t0 = time.time()
-    intent = intent_classifier.classify(user_message, safety, enable_llm=enable_intent)
+    intent = intent_classifier.classify(
+        user_message, safety, history=history, enable_llm=enable_intent
+    )
     t["intent_ms"] = (time.time() - t0) * 1000
 
     # Kural ve embedding katmanları önceden yazılmış ifadelere bakıyor. İkisi de
@@ -197,6 +200,19 @@ def respond(
 
     module_filter = intent_classifier.module_filter_from_intent(intent) if safety.allow_cbt else None
 
+    # 2b. Kart seçimi — deneysel, varsayılan kapalı (CBT_LLM_RETRIEVAL=1).
+    #
+    # Gömme sıralamasının ayırt etme gücü ölçülüp düşük bulundu; bu yol
+    # kararı modele veriyor. Ölçülene kadar üretimde açılmıyor. Model
+    # cevap veremezse None dönüyor ve retriever eskisi gibi çalışıyor.
+    secilen = None
+    if card_selector.enabled() and safety.allow_cbt:
+        t0 = time.time()
+        secilen = card_selector.select(
+            user_message, history=history, allow_cbt=safety.allow_cbt
+        )
+        t["card_select_ms"] = (time.time() - t0) * 1000
+
     # 3. Retrieve (safety hard-stop honored inside retriever; module bias
     # when intent classifier is confident)
     t0 = time.time()
@@ -206,6 +222,7 @@ def respond(
         safety_card_ids=safety.safety_card_ids or None,
         allow_cbt=safety.allow_cbt,
         module_filter=module_filter,
+        preferred_ids=secilen or None,
     )
     t["retrieve_ms"] = (time.time() - t0) * 1000
 
@@ -227,7 +244,7 @@ def respond(
 
     # 5. Critique (rule + LLM)
     t0 = time.time()
-    crit = output_critic.critique(response_text, safety, user_message, enable_llm=enable_llm_critic)
+    crit = output_critic.critique(response_text, safety, user_message, history=history, enable_llm=enable_llm_critic)
     t["critic_ms"] = (time.time() - t0) * 1000
     critic_history = [crit.to_dict()]
     rewrite_count = 0
@@ -248,7 +265,7 @@ def respond(
         t["rewrite_ms"] += (time.time() - t0) * 1000
 
         t0 = time.time()
-        crit = output_critic.critique(response_text, safety, user_message, enable_llm=enable_llm_critic)
+        crit = output_critic.critique(response_text, safety, user_message, history=history, enable_llm=enable_llm_critic)
         t["critic_ms"] += (time.time() - t0) * 1000
         critic_history.append(crit.to_dict())
 
@@ -257,7 +274,7 @@ def respond(
         response_text = _safety_template_fallback(safety)
         used_fallback = True
         # Re-critique the template to record final verdict
-        crit = output_critic.critique(response_text, safety, user_message, enable_llm=False)
+        crit = output_critic.critique(response_text, safety, user_message, history=history, enable_llm=False)
         critic_history.append(crit.to_dict())
 
     return Turn(

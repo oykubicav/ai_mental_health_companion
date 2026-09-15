@@ -37,6 +37,26 @@ SAFETY_LLM_FALLBACK = False           # off by default for offline / KVKK-safe r
 # ST tekrar değerlendirilebilir.
 PREFER_SENTENCE_TRANSFORMERS = os.environ.get("CBT_PREFER_ST", "0") == "1"
 
+# Bu bayrak YALNIZCA retriever için geçerli. Güvenlik sınıflandırıcısının
+# 3. katmanı TF-IDF'e sabitlenmiş durumda ve bayrağı dinlemiyor.
+#
+# Ölçüm (2026-09-09, 73 vakalık retrieval seti):
+#     CBT_PREFER_ST=1  →  retrieval_hit_rate  80.0% → 87.7%   (+7.7)
+#                         safety_recall       88.2% → 61.4%  (-26.8)
+#
+# Sebep eşiklerin ölçeğe bağlı olması: TF-IDF karakter n-gramı benzerlikleri
+# 0.05–0.20 aralığında toplanıyor, sentence-transformers 0.3–0.9 civarında
+# üretiyor. Layer 3 eşikleri TF-IDF dağılımına göre ayarlandığı için ST'ye
+# geçince aynı sayı bambaşka bir anlama geliyor ve riskli mesajlar eşiğin
+# altında kalıyor. 57 riskli vakanın 22'si kaçıyordu.
+#
+# Retriever'ın eşiği yok, yalnızca sıralama yapıyor — orada daha iyi bir
+# gömme doğrudan kazanç. Bu yüzden iki taraf ayrıldı. Güvenlik tarafında
+# ST'ye geçilecekse önce Layer 3 eşiklerinin ST dağılımına göre yeniden
+# ayarlanması ve safety_recall'ın yeniden ölçülmesi gerekiyor.
+PREFER_ST_RETRIEVAL = PREFER_SENTENCE_TRANSFORMERS
+PREFER_ST_SAFETY = False
+
 # --- retriever ---
 EMBED_MODEL = os.environ.get(
     "CBT_EMBED_MODEL",
